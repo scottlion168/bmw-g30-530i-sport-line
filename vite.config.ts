@@ -4,12 +4,16 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
+  // 自動取得「台灣/台北時間 (UTC+8)」格式化字串 (YYYY-MM-DD HH:mm)
   const now = new Date();
-  const buildDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const taiwanTimeStr = now.toLocaleString('sv-SE', { 
+    timeZone: 'Asia/Taipei' 
+  }).slice(0, 16); // 產出格式如: "2025-02-23 16:30"
 
   return {
+    base: '/bmw-g30-530i-sport-line/', // 👈 關鍵！一定要有這行！
     define: {
-      __BUILD_TIMESTAMP__: JSON.stringify(buildDate),
+      __BUILD_TIMESTAMP__: JSON.stringify(taiwanTimeStr),
     },
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -18,10 +22,7 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
