@@ -20,7 +20,10 @@ import {
   ShieldCheck,
   CheckCircle2,
   FileSpreadsheet,
-  SquareParking
+  SquareParking,
+  Route,
+  AlertTriangle,
+  Flag
 } from 'lucide-react';
 
 interface RecordsTableProps {
@@ -53,10 +56,13 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
     { key: 'maintenance', label: '🛠️ 保養維修', icon: Wrench },
     { key: 'fuel', label: '⛽ 油資紀錄', icon: Fuel },
     { key: 'parking', label: '🅿️ 停車費用', icon: SquareParking },
+    { key: 'toll', label: '🛣️ 通行規費', icon: Route },
     { key: 'tax_insurance', label: '🪪 稅務與規費', icon: FileText },
+    { key: 'fines', label: '🚨 交通罰單', icon: AlertTriangle },
     { key: 'detailing', label: '🧼 洗車美容', icon: Sparkles },
     { key: 'fault', label: '⚠️ 故障/異常', icon: AlertOctagon },
-    { key: 'tuning_obd', label: '⚙️ 改裝/OBD', icon: Tag }
+    { key: 'tuning_obd', label: '⚙️ 改裝/OBD', icon: Tag },
+    { key: 'other', label: '🚩 里程紀錄', icon: Flag }
   ];
 
   // Filtering & Sorting
@@ -119,16 +125,22 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">⛽ 燃油加油</span>;
       case 'parking':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">🅿️ 停車費用</span>;
+      case 'toll':
+        return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-teal-500/20 text-teal-300 border border-teal-500/30">🛣️ 通行規費</span>;
       case 'tax_insurance':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">🪪 稅務規費</span>;
+      case 'fines':
+        return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30">🚨 交通罰單</span>;
       case 'detailing':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">🧼 洗車美容</span>;
       case 'fault':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-red-500/20 text-red-400 border border-red-500/30">⚠️ 故障異常</span>;
       case 'tuning_obd':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">⚙️ 改裝設定</span>;
+      case 'other':
+        return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-slate-700/40 text-slate-300 border border-slate-600/40">🚩 里程紀錄</span>;
       default:
-        return null;
+        return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-slate-800 text-slate-400 border border-slate-700">{category}</span>;
     }
   };
 
@@ -479,6 +491,60 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
                                     </span>
                                   ))}
                                 </div>
+                              </div>
+                            )}
+
+                            {/* Sub-costs Breakdown Tags */}
+                            {(rec.maintenanceCost > 0 ||
+                              rec.fuelCost > 0 ||
+                              (rec.parkingCost && rec.parkingCost > 0) ||
+                              (rec.tollCost && rec.tollCost > 0) ||
+                              (rec.finesCost && rec.finesCost > 0) ||
+                              rec.detailingCost > 0 ||
+                              rec.taxCost > 0 ||
+                              (rec.otherCost && rec.otherCost > 0)) && (
+                              <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                                <span className="text-slate-400">💰 費用明細分攤：</span>
+                                {rec.maintenanceCost > 0 && (
+                                  <span className="px-2 py-0.5 rounded bg-blue-950/70 text-blue-300 border border-blue-800/60">
+                                    維修 NT${rec.maintenanceCost.toLocaleString()}
+                                  </span>
+                                )}
+                                {rec.fuelCost > 0 && (
+                                  <span className="px-2 py-0.5 rounded bg-cyan-950/70 text-cyan-300 border border-cyan-800/60">
+                                    燃油 NT${rec.fuelCost.toLocaleString()}
+                                  </span>
+                                )}
+                                {Boolean(rec.parkingCost && rec.parkingCost > 0) && (
+                                  <span className="px-2 py-0.5 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800/60">
+                                    停車 NT${rec.parkingCost!.toLocaleString()}
+                                  </span>
+                                )}
+                                {Boolean(rec.tollCost && rec.tollCost > 0) && (
+                                  <span className="px-2 py-0.5 rounded bg-teal-950/70 text-teal-300 border border-teal-800/60">
+                                    通行費 NT${rec.tollCost!.toLocaleString()}
+                                  </span>
+                                )}
+                                {Boolean(rec.finesCost && rec.finesCost > 0) && (
+                                  <span className="px-2 py-0.5 rounded bg-rose-950/70 text-rose-300 border border-rose-800/60">
+                                    罰單 NT${rec.finesCost!.toLocaleString()}
+                                  </span>
+                                )}
+                                {rec.detailingCost > 0 && (
+                                  <span className="px-2 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-800/60">
+                                    美容 NT${rec.detailingCost.toLocaleString()}
+                                  </span>
+                                )}
+                                {rec.taxCost > 0 && (
+                                  <span className="px-2 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/60">
+                                    稅費 NT${rec.taxCost.toLocaleString()}
+                                  </span>
+                                )}
+                                {Boolean(rec.otherCost && rec.otherCost > 0) && (
+                                  <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                                    其他 NT${rec.otherCost!.toLocaleString()}
+                                  </span>
+                                )}
                               </div>
                             )}
 

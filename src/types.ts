@@ -2,11 +2,14 @@ export type RecordCategory =
   | 'all'
   | 'maintenance'
   | 'fuel'
+  | 'parking'
+  | 'toll'
   | 'tax_insurance'
+  | 'fines'
   | 'detailing'
   | 'fault'
   | 'tuning_obd'
-  | 'parking';
+  | 'other';
 
 export interface HunterAlignmentCorner {
   camber: string;
@@ -37,7 +40,7 @@ export interface CarRecord {
   id: string;
   date: string;
   km: number | null;
-  category: 'maintenance' | 'fuel' | 'tax_insurance' | 'detailing' | 'fault' | 'tuning_obd' | 'parking';
+  category: 'maintenance' | 'fuel' | 'tax_insurance' | 'detailing' | 'fault' | 'tuning_obd' | 'parking' | 'toll' | 'fines' | 'other';
   categoryLabel: string;
   title: string;
   vendor: string;
@@ -47,6 +50,9 @@ export interface CarRecord {
   taxCost: number;
   contractCost: number;
   parkingCost?: number;
+  tollCost?: number;
+  finesCost?: number;
+  otherCost?: number;
   totalCost: number;
   notes?: string;
   partNumbers?: string[];
@@ -70,6 +76,9 @@ export interface YearlyStat {
   detailingCost: number;
   taxAndOtherCost: number;
   parkingCost?: number;
+  tollCost?: number;
+  finesCost?: number;
+  otherCost?: number;
   totalCost: number;
 }
 
@@ -105,7 +114,7 @@ export interface RecordFormData {
   id?: string;
   date: string;
   km: string | number;
-  category: 'maintenance' | 'fuel' | 'tax_insurance' | 'detailing' | 'fault' | 'tuning_obd' | 'parking';
+  category: 'maintenance' | 'fuel' | 'tax_insurance' | 'detailing' | 'fault' | 'tuning_obd' | 'parking' | 'toll' | 'fines' | 'other';
   title: string;
   vendor: string;
   maintenanceCost: number;
@@ -114,6 +123,9 @@ export interface RecordFormData {
   taxCost: number;
   contractCost: number;
   parkingCost?: number;
+  tollCost?: number;
+  finesCost?: number;
+  otherCost?: number;
   totalCost: number;
   notes: string;
   partNumbers: string[];

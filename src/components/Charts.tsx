@@ -45,12 +45,19 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         maintenanceData: [],
         fuelData: [],
         parkingData: [],
+        tollData: [],
         taxData: [],
+        finesData: [],
         detailingData: [],
+        otherData: [],
         totalMaintenance: 0,
         totalFuel: 0,
         totalParking: 0,
+        totalToll: 0,
+        totalTax: 0,
+        totalFines: 0,
         totalDetailing: 0,
+        totalOther: 0,
         totalCost: 0,
         efficiencyYears: [],
         efficiencyKmL: [],
@@ -64,8 +71,11 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         maintenance: number;
         fuel: number;
         parking: number;
+        toll: number;
         tax: number;
+        fines: number;
         detailing: number;
+        other: number;
         minKm: number;
         maxKm: number;
       };
@@ -74,13 +84,28 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
     let totalMaintenance = 0;
     let totalFuel = 0;
     let totalParking = 0;
+    let totalToll = 0;
+    let totalTax = 0;
+    let totalFines = 0;
     let totalDetailing = 0;
+    let totalOther = 0;
     let totalCost = 0;
 
     records.forEach((r) => {
       const year = (r.date || '').substring(0, 4) || '未知年份';
       if (!yearMap[year]) {
-        yearMap[year] = { maintenance: 0, fuel: 0, parking: 0, tax: 0, detailing: 0, minKm: Infinity, maxKm: 0 };
+        yearMap[year] = {
+          maintenance: 0,
+          fuel: 0,
+          parking: 0,
+          toll: 0,
+          tax: 0,
+          fines: 0,
+          detailing: 0,
+          other: 0,
+          minKm: Infinity,
+          maxKm: 0
+        };
       }
 
       totalCost += r.totalCost;
@@ -99,12 +124,21 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       } else if (r.category === 'parking') {
         yearMap[year].parking += r.totalCost;
         totalParking += r.totalCost;
+      } else if (r.category === 'toll') {
+        yearMap[year].toll += r.totalCost;
+        totalToll += r.totalCost;
       } else if (r.category === 'tax_insurance') {
         yearMap[year].tax += r.totalCost;
-        totalMaintenance += r.totalCost;
+        totalTax += r.totalCost;
+      } else if (r.category === 'fines') {
+        yearMap[year].fines += r.totalCost;
+        totalFines += r.totalCost;
       } else if (r.category === 'detailing') {
         yearMap[year].detailing += r.totalCost;
         totalDetailing += r.totalCost;
+      } else if (r.category === 'other') {
+        yearMap[year].other += r.totalCost;
+        totalOther += r.totalCost;
       } else {
         yearMap[year].maintenance += r.totalCost;
         totalMaintenance += r.totalCost;
@@ -116,8 +150,11 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
     const maintenanceData = sortedYears.map((y) => yearMap[y].maintenance);
     const fuelData = sortedYears.map((y) => yearMap[y].fuel);
     const parkingData = sortedYears.map((y) => yearMap[y].parking);
+    const tollData = sortedYears.map((y) => yearMap[y].toll);
     const taxData = sortedYears.map((y) => yearMap[y].tax);
+    const finesData = sortedYears.map((y) => yearMap[y].fines);
     const detailingData = sortedYears.map((y) => yearMap[y].detailing);
+    const otherData = sortedYears.map((y) => yearMap[y].other);
 
     // Fuel efficiency estimations from actual data
     const efficiencyYears: string[] = [];
@@ -125,9 +162,10 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
     const efficiencyKm: number[] = [];
 
     sortedYears.forEach((y) => {
-      const kmDiff = yearMap[y].maxKm > yearMap[y].minKm && yearMap[y].minKm !== Infinity
-        ? yearMap[y].maxKm - yearMap[y].minKm
-        : 0;
+      const kmDiff =
+        yearMap[y].maxKm > yearMap[y].minKm && yearMap[y].minKm !== Infinity
+          ? yearMap[y].maxKm - yearMap[y].minKm
+          : 0;
       if (kmDiff > 0 && yearMap[y].fuel > 0) {
         efficiencyYears.push(`${y}年`);
         efficiencyKm.push(kmDiff);
@@ -142,12 +180,19 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       maintenanceData,
       fuelData,
       parkingData,
+      tollData,
       taxData,
+      finesData,
       detailingData,
+      otherData,
       totalMaintenance,
       totalFuel,
       totalParking,
+      totalToll,
+      totalTax,
+      totalFines,
       totalDetailing,
+      totalOther,
       totalCost,
       efficiencyYears,
       efficiencyKmL,
@@ -178,10 +223,19 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         stack: 'Stack 0'
       },
       {
-        label: '🅿️ 停車與場租費用',
+        label: '🅿️ 停車費用',
         data: dynamicStats.parkingData,
         backgroundColor: 'rgba(99, 102, 241, 0.85)',
         borderColor: 'rgb(99, 102, 241)',
+        borderWidth: 1,
+        borderRadius: 4,
+        stack: 'Stack 0'
+      },
+      {
+        label: '🛣️ 通行規費 (eTag)',
+        data: dynamicStats.tollData,
+        backgroundColor: 'rgba(20, 184, 166, 0.85)',
+        borderColor: 'rgb(20, 184, 166)',
         borderWidth: 1,
         borderRadius: 4,
         stack: 'Stack 0'
@@ -196,10 +250,28 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         stack: 'Stack 0'
       },
       {
-        label: '🧼 洗車與鍍膜美容',
+        label: '🚨 交通罰單',
+        data: dynamicStats.finesData,
+        backgroundColor: 'rgba(244, 63, 94, 0.85)',
+        borderColor: 'rgb(244, 63, 94)',
+        borderWidth: 1,
+        borderRadius: 4,
+        stack: 'Stack 0'
+      },
+      {
+        label: '🧼 洗車美容',
         data: dynamicStats.detailingData,
         backgroundColor: 'rgba(168, 85, 247, 0.85)',
         borderColor: 'rgb(168, 85, 247)',
+        borderWidth: 1,
+        borderRadius: 4,
+        stack: 'Stack 0'
+      },
+      {
+        label: '🚩 其他雜項',
+        data: dynamicStats.otherData,
+        backgroundColor: 'rgba(148, 163, 184, 0.85)',
+        borderColor: 'rgb(148, 163, 184)',
         borderWidth: 1,
         borderRadius: 4,
         stack: 'Stack 0'
@@ -215,9 +287,9 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         position: 'top' as const,
         labels: {
           color: '#94a3b8',
-          font: { family: 'Noto Sans TC', size: 12 },
-          boxWidth: 12,
-          boxHeight: 12,
+          font: { family: 'Noto Sans TC', size: 11 },
+          boxWidth: 10,
+          boxHeight: 10,
           useBorderRadius: true,
           borderRadius: 3
         }
@@ -258,22 +330,36 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
 
   // Chart 2: Cumulative Expense Distribution Doughnut
   const doughnutData = {
-    labels: ['保養維修與零件', '中油 98 油資', '停車租賃費用', '洗車鍍膜美容'],
+    labels: [
+      '保養維修零件',
+      '汽油燃油油資',
+      '停車費用場租',
+      '國道通行規費',
+      '稅務保險規費',
+      '交通違規罰單',
+      '洗車鍍膜美容'
+    ],
     datasets: [
       {
         data: [
           dynamicStats.totalMaintenance,
           dynamicStats.totalFuel,
           dynamicStats.totalParking,
+          dynamicStats.totalToll,
+          dynamicStats.totalTax,
+          dynamicStats.totalFines,
           dynamicStats.totalDetailing
         ],
         backgroundColor: [
           'rgba(59, 130, 246, 0.9)',
           'rgba(6, 182, 212, 0.9)',
           'rgba(99, 102, 241, 0.9)',
+          'rgba(20, 184, 166, 0.9)',
+          'rgba(245, 158, 11, 0.9)',
+          'rgba(244, 63, 94, 0.9)',
           'rgba(168, 85, 247, 0.9)'
         ],
-        borderColor: ['#1e293b', '#1e293b', '#1e293b', '#1e293b'],
+        borderColor: '#1e293b',
         borderWidth: 2,
         hoverOffset: 6
       }
@@ -400,6 +486,9 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
   const maintPct = hasRecords ? ((dynamicStats.totalMaintenance / safeTotal) * 100).toFixed(1) : '0.0';
   const fuelPct = hasRecords ? ((dynamicStats.totalFuel / safeTotal) * 100).toFixed(1) : '0.0';
   const parkingPct = hasRecords ? ((dynamicStats.totalParking / safeTotal) * 100).toFixed(1) : '0.0';
+  const tollPct = hasRecords ? ((dynamicStats.totalToll / safeTotal) * 100).toFixed(1) : '0.0';
+  const taxPct = hasRecords ? ((dynamicStats.totalTax / safeTotal) * 100).toFixed(1) : '0.0';
+  const finesPct = hasRecords ? ((dynamicStats.totalFines / safeTotal) * 100).toFixed(1) : '0.0';
   const detailPct = hasRecords ? ((dynamicStats.totalDetailing / safeTotal) * 100).toFixed(1) : '0.0';
 
   if (!hasRecords) {
@@ -509,22 +598,38 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono-code pt-3 border-t border-slate-800">
-          <div className="bg-blue-950/40 border border-blue-900/50 p-2 rounded-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center text-xs font-mono-code pt-3 border-t border-slate-800">
+          <div className="bg-blue-950/40 border border-blue-900/50 p-1.5 rounded-lg">
             <div className="text-blue-400 font-bold">{maintPct}%</div>
             <div className="text-[10px] text-slate-400">保修零件</div>
           </div>
-          <div className="bg-cyan-950/40 border border-cyan-900/50 p-2 rounded-xl">
+          <div className="bg-cyan-950/40 border border-cyan-900/50 p-1.5 rounded-lg">
             <div className="text-cyan-400 font-bold">{fuelPct}%</div>
             <div className="text-[10px] text-slate-400">汽油燃油</div>
           </div>
-          <div className="bg-indigo-950/40 border border-indigo-900/50 p-2 rounded-xl">
+          <div className="bg-indigo-950/40 border border-indigo-900/50 p-1.5 rounded-lg">
             <div className="text-indigo-400 font-bold">{parkingPct}%</div>
-            <div className="text-[10px] text-slate-400">停車場租</div>
+            <div className="text-[10px] text-slate-400">停車費用</div>
           </div>
-          <div className="bg-purple-950/40 border border-purple-900/50 p-2 rounded-xl">
+          <div className="bg-teal-950/40 border border-teal-900/50 p-1.5 rounded-lg">
+            <div className="text-teal-400 font-bold">{tollPct}%</div>
+            <div className="text-[10px] text-slate-400">國道通行</div>
+          </div>
+          <div className="bg-amber-950/40 border border-amber-900/50 p-1.5 rounded-lg">
+            <div className="text-amber-400 font-bold">{taxPct}%</div>
+            <div className="text-[10px] text-slate-400">稅務規費</div>
+          </div>
+          <div className="bg-rose-950/40 border border-rose-900/50 p-1.5 rounded-lg">
+            <div className="text-rose-400 font-bold">{finesPct}%</div>
+            <div className="text-[10px] text-slate-400">交通罰單</div>
+          </div>
+          <div className="bg-purple-950/40 border border-purple-900/50 p-1.5 rounded-lg">
             <div className="text-purple-400 font-bold">{detailPct}%</div>
             <div className="text-[10px] text-slate-400">洗車美容</div>
+          </div>
+          <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-lg">
+            <div className="text-slate-300 font-bold">100%</div>
+            <div className="text-[10px] text-slate-400">全項總和</div>
           </div>
         </div>
       </div>

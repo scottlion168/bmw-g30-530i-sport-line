@@ -44,9 +44,13 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
     vendor: '配合專業保修廠',
     maintenanceCost: 0,
     fuelCost: 0,
+    parkingCost: 0,
+    tollCost: 0,
+    finesCost: 0,
     detailingCost: 0,
     taxCost: 0,
     contractCost: 0,
+    otherCost: 0,
     totalCost: 0,
     notes: '',
     partNumbers: [],
@@ -72,9 +76,12 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
           maintenanceCost: recordToEdit.maintenanceCost || 0,
           fuelCost: recordToEdit.fuelCost || 0,
           parkingCost: recordToEdit.parkingCost || 0,
+          tollCost: recordToEdit.tollCost || 0,
+          finesCost: recordToEdit.finesCost || 0,
           detailingCost: recordToEdit.detailingCost || 0,
           taxCost: recordToEdit.taxCost || 0,
           contractCost: recordToEdit.contractCost || 0,
+          otherCost: recordToEdit.otherCost || 0,
           totalCost: recordToEdit.totalCost || 0,
           notes: recordToEdit.notes || '',
           partNumbers: recordToEdit.partNumbers ? [...recordToEdit.partNumbers] : [],
@@ -92,9 +99,12 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
           maintenanceCost: 0,
           fuelCost: 0,
           parkingCost: 0,
+          tollCost: 0,
+          finesCost: 0,
           detailingCost: 0,
           taxCost: 0,
           contractCost: 0,
+          otherCost: 0,
           totalCost: 0,
           notes: '',
           partNumbers: [],
@@ -127,16 +137,22 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
   }, [formData.date, formData.km, formData.title, formData.id, existingRecords, isOpen]);
 
   // Auto calculate total cost unless user manually enters a custom sum
-  const handleCostChange = (field: 'maintenanceCost' | 'fuelCost' | 'parkingCost' | 'detailingCost' | 'taxCost' | 'contractCost', val: number) => {
+  const handleCostChange = (
+    field: 'maintenanceCost' | 'fuelCost' | 'parkingCost' | 'tollCost' | 'finesCost' | 'detailingCost' | 'taxCost' | 'contractCost' | 'otherCost',
+    val: number
+  ) => {
     const updated = { ...formData, [field]: val };
     if (!isManualTotal) {
       updated.totalCost =
         (field === 'maintenanceCost' ? val : (formData.maintenanceCost || 0)) +
         (field === 'fuelCost' ? val : (formData.fuelCost || 0)) +
         (field === 'parkingCost' ? val : (formData.parkingCost || 0)) +
+        (field === 'tollCost' ? val : (formData.tollCost || 0)) +
+        (field === 'finesCost' ? val : (formData.finesCost || 0)) +
         (field === 'detailingCost' ? val : (formData.detailingCost || 0)) +
         (field === 'taxCost' ? val : (formData.taxCost || 0)) +
-        (field === 'contractCost' ? val : (formData.contractCost || 0));
+        (field === 'contractCost' ? val : (formData.contractCost || 0)) +
+        (field === 'otherCost' ? val : (formData.otherCost || 0));
     }
     setFormData(updated);
   };
@@ -178,10 +194,16 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
       vendorDefault = '台灣中油直營門市';
     } else if (cat === 'parking' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
       vendorDefault = '市區室內月租/臨停停車場';
+    } else if (cat === 'toll' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
+      vendorDefault = '遠通電收 / 國道高速公路局';
+    } else if (cat === 'fines' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
+      vendorDefault = '交通部公路局 / 交通裁決處';
+    } else if (cat === 'other' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
+      vendorDefault = '車主定期抄表記錄';
     } else if (cat === 'detailing' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
       vendorDefault = '專業汽車精緻美容';
     } else if (cat === 'tax_insurance' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
-      vendorDefault = '監理所 / 產險公會 / 國道通行費';
+      vendorDefault = '監理所 / 產險公會';
     }
     setFormData({ ...formData, category: cat, vendor: vendorDefault });
   };
@@ -197,10 +219,13 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
       maintenance: '🛠️ 保養維修',
       fuel: '⛽ 油資紀錄',
       parking: '🅿️ 停車費用',
+      toll: '🛣️ 通行規費',
       tax_insurance: '🪪 稅務與規費',
+      fines: '🚨 交通罰單',
       detailing: '🧼 洗車美容',
       fault: '⚠️ 故障/異常',
-      tuning_obd: '⚙️ 改裝/OBD'
+      tuning_obd: '⚙️ 改裝/OBD',
+      other: '🚩 里程紀錄'
     };
 
     const finalRecord: CarRecord = {
@@ -214,9 +239,12 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
       maintenanceCost: Number(formData.maintenanceCost) || 0,
       fuelCost: Number(formData.fuelCost) || 0,
       parkingCost: Number(formData.parkingCost) || 0,
+      tollCost: Number(formData.tollCost) || 0,
+      finesCost: Number(formData.finesCost) || 0,
       detailingCost: Number(formData.detailingCost) || 0,
       taxCost: Number(formData.taxCost) || 0,
       contractCost: Number(formData.contractCost) || 0,
+      otherCost: Number(formData.otherCost) || 0,
       totalCost: Number(formData.totalCost) || 0,
       notes: formData.notes.trim() || undefined,
       partNumbers: formData.partNumbers.length > 0 ? formData.partNumbers : undefined,
@@ -308,10 +336,13 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
                 <option value="maintenance">🛠️ 保養維修 (Maintenance)</option>
                 <option value="fuel">⛽ 油資紀錄 (Fuel)</option>
                 <option value="parking">🅿️ 停車費用 (Parking)</option>
-                <option value="tax_insurance">🪪 稅務與規費 (Tax/Insurance/Toll)</option>
+                <option value="toll">🛣️ 通行規費 (eTag/Toll)</option>
+                <option value="tax_insurance">🪪 稅務與規費 (Tax/Insurance)</option>
+                <option value="fines">🚨 交通罰單 (Traffic Fines)</option>
                 <option value="detailing">🧼 洗車美容 (Detailing)</option>
                 <option value="fault">⚠️ 故障/異常 (Fault Issue)</option>
                 <option value="tuning_obd">⚙️ 改裝/OBD (Tuning/Coding)</option>
+                <option value="other">🚩 里程紀錄 (Mileage Log/Other)</option>
               </select>
             </div>
           </div>
@@ -359,9 +390,9 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
               </label>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">維修/零件費用</span>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🛠️ 維修/零件費用</span>
                 <input
                   type="number"
                   min="0"
@@ -373,7 +404,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
               </div>
 
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">汽油油資金額</span>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">⛽ 汽油燃油金額</span>
                 <input
                   type="number"
                   min="0"
@@ -397,7 +428,43 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
               </div>
 
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">洗車美容費用</span>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🛣️ 通行規費 (eTag)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.tollCost || ''}
+                  onChange={(e) => handleCostChange('tollCost', Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono"
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🚨 交通違規罰單</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.finesCost || ''}
+                  onChange={(e) => handleCostChange('finesCost', Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono"
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🪪 稅務保險/規費</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.taxCost || ''}
+                  onChange={(e) => handleCostChange('taxCost', Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono"
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🧼 洗車美容費用</span>
                 <input
                   type="number"
                   min="0"
@@ -409,12 +476,12 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
               </div>
 
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">稅務保險/規費</span>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🚩 其他/雜項支出</span>
                 <input
                   type="number"
                   min="0"
-                  value={formData.taxCost || ''}
-                  onChange={(e) => handleCostChange('taxCost', Number(e.target.value))}
+                  value={formData.otherCost || ''}
+                  onChange={(e) => handleCostChange('otherCost', Number(e.target.value))}
                   placeholder="0"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono"
                 />

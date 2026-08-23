@@ -21,6 +21,12 @@ export function generateRecordSignature(r: { date: string; km: number | null | s
 export function detectCategory(catStr: string, titleStr: string): { category: CarRecord['category']; label: string } {
   const combined = (catStr + ' ' + titleStr).toLowerCase();
   
+  if (combined.includes('通行') || combined.includes('etag') || combined.includes('過路費') || combined.includes('國道') || combined.includes('遠通') || combined.includes('高速公路') || combined.includes('toll')) {
+    return { category: 'toll', label: '🛣️ 通行規費' };
+  }
+  if (combined.includes('罰單') || combined.includes('超速') || combined.includes('違規') || combined.includes('違停') || combined.includes('拍照') || combined.includes('裁決') || combined.includes('舉發') || combined.includes('罰鍰') || combined.includes('fine') || combined.includes('ticket')) {
+    return { category: 'fines', label: '🚨 交通罰單' };
+  }
   if (combined.includes('停車') || combined.includes('車位') || combined.includes('停車場') || combined.includes('泊車') || combined.includes('parking') || combined.includes('嘟嘟房') || combined.includes('俥亭') || combined.includes('台灣聯通') || combined.includes('便利停車')) {
     return { category: 'parking', label: '🅿️ 停車費用' };
   }
@@ -30,8 +36,11 @@ export function detectCategory(catStr: string, titleStr: string): { category: Ca
   if (combined.includes('洗車') || combined.includes('美容') || combined.includes('鍍膜') || combined.includes('除瀝青') || combined.includes('detailing')) {
     return { category: 'detailing', label: '🧼 洗車美容' };
   }
-  if (combined.includes('稅') || combined.includes('保險') || combined.includes('規費') || combined.includes('過戶') || combined.includes('驗車') || combined.includes('罰單') || combined.includes('月租')) {
+  if (combined.includes('稅') || combined.includes('保險') || combined.includes('乙式') || combined.includes('丙式') || combined.includes('強制險') || combined.includes('規費') || combined.includes('過戶') || combined.includes('驗車')) {
     return { category: 'tax_insurance', label: '🪪 稅務與規費' };
+  }
+  if (combined.includes('抄表') || combined.includes('純里程') || combined.includes('里程紀錄') || combined.includes('里程登記') || combined.includes('定檢里程')) {
+    return { category: 'other', label: '🚩 里程紀錄' };
   }
   if (combined.includes('故障') || combined.includes('異常') || combined.includes('拖吊') || combined.includes('破裂') || combined.includes('警告') || combined.includes('漏水') || combined.includes('卡住') || combined.includes('fault')) {
     return { category: 'fault', label: '⚠️ 故障/異常' };
@@ -243,6 +252,9 @@ export function parseCSVText(rawText: string, currentRecords: CarRecord[]): Impo
       maintenanceCost: (catObj.category === 'maintenance' || catObj.category === 'fault') ? cost : 0,
       taxCost: catObj.category === 'tax_insurance' ? cost : 0,
       parkingCost: catObj.category === 'parking' ? cost : 0,
+      tollCost: catObj.category === 'toll' ? cost : 0,
+      finesCost: catObj.category === 'fines' ? cost : 0,
+      otherCost: catObj.category === 'other' ? cost : 0,
       contractCost: 0,
       totalCost: cost,
       notes: notes || undefined,
