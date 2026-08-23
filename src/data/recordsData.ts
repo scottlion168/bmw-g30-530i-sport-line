@@ -170,7 +170,7 @@ export const ALL_RECORDS: CarRecord[] = [
     contractCost: 0,
     parkingCost: 0,
     totalCost: 150,
-    notes: '🧼 自助投幣式洗車清潔'
+    notes: '🧼自助洗車服務'
   },
   {
     id: 'rec-3',
@@ -204,7 +204,7 @@ export const ALL_RECORDS: CarRecord[] = [
     contractCost: 0,
     parkingCost: 0,
     totalCost: 150,
-    notes: '🧼 自助投幣式洗車清潔'
+    notes: '🧼自助洗車服務'
   },
   {
     id: 'rec-4',
@@ -238,7 +238,7 @@ export const ALL_RECORDS: CarRecord[] = [
     contractCost: 0,
     parkingCost: 0,
     totalCost: 120,
-    notes: '🧼 自助投幣式洗車清潔'
+    notes: '🧼自助洗車服務'
   },
   {
     id: 'rec-590',
