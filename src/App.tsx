@@ -11,7 +11,6 @@ import { HiddenFeaturesModal } from './components/HiddenFeaturesModal';
 import { RecordCategory, MilestoneItem, CarRecord } from './types';
 import { ALL_RECORDS } from './data/recordsData';
 import { getLastUpdatedTime } from './utils/recordManager';
-import confetti from 'canvas-confetti';
 import { ShieldCheck, Car, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
@@ -32,36 +31,6 @@ export default function App() {
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
-  };
-
-  // CSV Exporter for visitors
-  const handleExportCSV = () => {
-    try {
-      confetti({ particleCount: 40, spread: 60, origin: { y: 0.1 } });
-      const headers = ['日期', '里程(km)', '分類', '項目說明', '保修店家(脫敏)', '費用(TWD)', '備註與零件料號'];
-      const rows = records.map((r) => [
-        r.date,
-        r.km || '',
-        r.categoryLabel,
-        `"${r.title.replace(/"/g, '""')}"`,
-        `"${r.vendor.replace(/"/g, '""')}"`,
-        r.totalCost,
-        `"${((r.notes || '') + ' ' + (r.partNumbers?.join('; ') || '')).trim().replace(/"/g, '""')}"`
-      ]);
-
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `BMW_G30_530i_Maintenance_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast('已成功匯出完整脫敏 CSV 檔案！', 'success');
-    } catch (err) {
-      console.error('Export CSV error:', err);
-    }
   };
 
   const handleSelectMilestone = (item: MilestoneItem) => {
@@ -109,7 +78,6 @@ export default function App() {
         onOpenHunter={() => setIsHunterOpen(true)}
         onOpenOBD={() => setIsOBDOpen(true)}
         onOpenHiddenFeatures={() => setIsHiddenFeaturesOpen(true)}
-        onExportCSV={handleExportCSV}
       />
 
       {/* Main Container */}
@@ -178,7 +146,6 @@ export default function App() {
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
             onOpenHunter={() => setIsHunterOpen(true)}
-            onExportCSV={handleExportCSV}
           />
         </div>
       </main>
@@ -198,9 +165,24 @@ export default function App() {
       </footer>
 
       {/* Interactive Read-Only Modals */}
-      <HunterModal isOpen={isHunterOpen} onClose={() => setIsHunterOpen(false)} />
-      <OBDModal isOpen={isOBDOpen} onClose={() => setIsOBDOpen(false)} />
-      <HiddenFeaturesModal isOpen={isHiddenFeaturesOpen} onClose={() => setIsHiddenFeaturesOpen(false)} />
+      <HunterModal
+        isOpen={isHunterOpen}
+        onClose={() => setIsHunterOpen(false)}
+        records={records}
+        onFilterByKeyword={handleFilterByKeyword}
+      />
+      <OBDModal
+        isOpen={isOBDOpen}
+        onClose={() => setIsOBDOpen(false)}
+        records={records}
+        onSelectCode={handleFilterByKeyword}
+      />
+      <HiddenFeaturesModal
+        isOpen={isHiddenFeaturesOpen}
+        onClose={() => setIsHiddenFeaturesOpen(false)}
+        records={records}
+        onFilterByKeyword={handleFilterByKeyword}
+      />
     </div>
   );
 }

@@ -54,6 +54,8 @@ export interface CarRecord {
   tollCost?: number;
   telecomCost?: number;
   finesCost?: number;
+  fineCost?: number;
+  tuningCost?: number;
   otherCost?: number;
   totalCost: number;
   notes?: string;

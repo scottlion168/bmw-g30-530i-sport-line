@@ -1,6 +1,8 @@
 {
-  "name": "BMW G30 530i Sport Line 養護履歷儀表板",
-  "description": "2017 BMW G30 530i Sport Line (美規 B46 引擎) 全週期養護成本、B46通病里程碑與技術履歷數據儀表板",
+  "name": "Remix BMW G30 530i Sport Line 養護履歷儀表板",
+  "description": "2017 BMW G30 530i Sport Line (美規 B46 引擎) 全週期養護成本、B46通病里程碑與技術履歷數據儀表板\n[bmw-g30-530i-sport-line]",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

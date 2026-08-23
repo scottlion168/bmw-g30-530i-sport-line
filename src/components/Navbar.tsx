@@ -1,19 +1,17 @@
 import React from 'react';
-import { Shield, Sparkles, Activity, FileSpreadsheet, Cpu, Compass } from 'lucide-react';
+import { Shield, Sparkles, Activity, Cpu, Compass } from 'lucide-react';
 import { SUMMARY_STATS } from '../data/yearlyData';
 
 interface NavbarProps {
   onOpenHunter: () => void;
   onOpenOBD: () => void;
   onOpenHiddenFeatures: () => void;
-  onExportCSV: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenHunter,
   onOpenOBD,
-  onOpenHiddenFeatures,
-  onExportCSV
+  onOpenHiddenFeatures
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 shadow-2xl">
@@ -70,15 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>刷隱藏 20項</span>
-          </button>
-
-          <button
-            onClick={onExportCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-md shadow-blue-600/20 cursor-pointer"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">匯出脫敏 CSV</span>
-            <span className="sm:hidden">匯出</span>
           </button>
         </div>
       </div>

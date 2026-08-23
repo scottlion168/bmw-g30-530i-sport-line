@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { B46_MILESTONES } from '../data/milestonesData';
 import { MilestoneItem, CarRecord } from '../types';
-import { AlertTriangle, CheckCircle2, Flame, Wrench, ShieldAlert, ChevronRight, Cpu, Zap, Tag, Clock, HelpCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Flame, Wrench, ShieldAlert, ChevronRight, Cpu, Zap, Tag, Clock, HelpCircle, ExternalLink } from 'lucide-react';
 
 interface MilestonesSectionProps {
   records?: CarRecord[];
@@ -17,39 +17,84 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
   const [selectedId, setSelectedId] = useState<string>(B46_MILESTONES[0].id);
   const hasRecords = records && records.length > 0;
 
+  // Jump to table helper
+  const handleJumpToSearch = (keyword: string) => {
+    onFilterByKeyword(keyword);
+    const tableEl = document.getElementById('records-table-anchor');
+    if (tableEl) {
+      tableEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   // Match milestones against current loaded records
   const dynamicMilestones = useMemo(() => {
     return B46_MILESTONES.map((m) => {
-      // Define search keywords for each milestone
-      let keywords: string[] = [];
-      if (m.id === 'milestone-57k') {
-        keywords = ['冷卻', '水管', '變速箱', '火星塞', '水箱精', '進氣岐管', '6萬大保養'];
-      } else if (m.id === 'milestone-71k') {
-        keywords = ['百葉窗', 'akks', '51747497279', '21b043', '21b044', '138207', '散熱器百葉窗', '進氣格柵'];
-      } else if (m.id === 'milestone-76k') {
-        keywords = ['tpms', '胎壓', '36106876957', '48077e', '胎壓感知器', '發射器'];
-      } else if (m.id === 'milestone-81k') {
-        keywords = ['電瓶', '電池', 'agm', 'varta', 'bosch', '副電瓶', '主電瓶', '802a30'];
-      } else if (m.id === 'milestone-89k') {
-        keywords = ['機油芯座', '水泵浦', '節溫器', '熱管理', '上水管', '轉接頭'];
+      // Collect search keywords, part numbers, and DTC codes for each milestone
+      const searchTerms: string[] = [...m.tags];
+      if (m.parts) {
+        m.parts.forEach((p) => {
+          searchTerms.push(p.partNumber.split(' ')[0]);
+          searchTerms.push(p.name);
+        });
+      }
+      if (m.obdCodes) {
+        m.obdCodes.forEach((c) => searchTerms.push(c));
       }
 
-      // Search in records
-      let matchedRecord: CarRecord | undefined;
+      // Add specific milestone keywords
+      if (m.id === 'milestone-57k') {
+        searchTerms.push('冷卻', '水管', '變速箱', '火星塞', '水箱精', '進氣岐管', '6萬大保養', '熱水管');
+      } else if (m.id === 'milestone-71k') {
+        searchTerms.push('百葉窗', 'AKKS', '51747497279', '21B043', '21B044', '138207', '散熱器百葉窗', '進氣格柵');
+      } else if (m.id === 'milestone-76k') {
+        searchTerms.push('TPMS', '胎壓', '36106876957', '48077E', '胎壓感知器', '發射器', '輪胎');
+      } else if (m.id === 'milestone-81k') {
+        searchTerms.push('電瓶', '電池', 'AGM', 'VARTA', 'Bosch', '副電瓶', '主電瓶', '802A30', '92Ah', '60Ah');
+      } else if (m.id === 'milestone-89k') {
+        searchTerms.push('機油芯座', '水泵浦', '節溫器', '熱管理', '上水管', '轉接頭', '11428596283', '11518638026');
+      }
+
+      // Find ALL matching records in database
+      const matchedRecords: CarRecord[] = [];
       if (hasRecords) {
-        matchedRecord = records.find((r) => {
-          const fullText = (r.title + ' ' + (r.notes || '') + ' ' + (r.partNumbers?.join(' ') || '') + ' ' + (r.obdCodes?.join(' ') || '')).toLowerCase();
-          return keywords.some((kw) => fullText.includes(kw.toLowerCase()));
+        records.forEach((r) => {
+          const titleLower = r.title.toLowerCase();
+          const notesLower = (r.notes || '').toLowerCase();
+          const partsLower = (r.partNumbers || []).map((p) => p.toLowerCase());
+          const obdLower = (r.obdCodes || []).map((c) => c.toLowerCase());
+          const tagsLower = ((r as any).tags || []).map((t: string) => t.toLowerCase());
+
+          const isMatch = searchTerms.some((term) => {
+            const t = term.toLowerCase();
+            return (
+              titleLower.includes(t) ||
+              notesLower.includes(t) ||
+              partsLower.some((p) => p.includes(t)) ||
+              obdLower.some((c) => c.includes(t)) ||
+              tagsLower.some((tag: string) => tag.includes(t))
+            );
+          });
+
+          if (isMatch && !matchedRecords.some((mr) => mr.id === r.id)) {
+            matchedRecords.push(r);
+          }
         });
       }
 
+      // Sort matched records by date
+      matchedRecords.sort((a, b) => a.date.localeCompare(b.date));
+
+      const primaryRecord = matchedRecords.length > 0 ? matchedRecords[matchedRecords.length - 1] : undefined;
+      const totalMatchedCost = matchedRecords.reduce((sum, r) => sum + r.totalCost, 0);
+
       return {
         ...m,
-        isMatched: !!matchedRecord,
-        matchedRecord,
-        displayDate: matchedRecord ? matchedRecord.date : m.date,
-        displayKm: matchedRecord && matchedRecord.km ? matchedRecord.km : m.km,
-        displayCost: matchedRecord ? matchedRecord.totalCost : m.cost
+        isMatched: matchedRecords.length > 0,
+        matchedRecord: primaryRecord,
+        allMatchedRecords: matchedRecords,
+        displayDate: primaryRecord ? primaryRecord.date : m.date,
+        displayKm: primaryRecord && primaryRecord.km ? primaryRecord.km : m.km,
+        displayCost: matchedRecords.length > 0 ? totalMatchedCost : m.cost
       };
     });
   }, [records, hasRecords]);
@@ -164,7 +209,7 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
               {activeMilestone.isMatched ? (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-mono flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  已從目前工單庫確認完工紀錄
+                  已從公開工單資料庫比對出 {activeMilestone.allMatchedRecords?.length || 1} 筆完工紀錄
                 </span>
               ) : (
                 <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[11px] font-mono flex items-center gap-1">
@@ -201,14 +246,32 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
               </div>
             </div>
 
-            {/* Matched Record Notes */}
-            {activeMilestone.matchedRecord?.notes && (
-              <div className="bg-slate-950/70 rounded-xl p-3 border border-blue-900/40">
-                <div className="text-xs font-bold text-blue-400 font-mono flex items-center gap-1.5 mb-1">
-                  📋 實際施工備註：
+            {/* Matched Records Work Orders List */}
+            {activeMilestone.allMatchedRecords && activeMilestone.allMatchedRecords.length > 0 && (
+              <div className="bg-slate-950/70 rounded-xl p-3 border border-blue-900/40 space-y-2">
+                <div className="text-xs font-bold text-blue-400 font-mono flex items-center justify-between">
+                  <span>📋 對應工單紀錄 ({activeMilestone.allMatchedRecords.length} 筆)：</span>
+                  <span className="text-[10px] text-slate-400 font-normal">點擊直接跳轉工單</span>
                 </div>
-                <div className="text-xs text-slate-200 whitespace-pre-line font-sans leading-relaxed">
-                  {activeMilestone.matchedRecord.notes}
+                <div className="space-y-1.5">
+                  {activeMilestone.allMatchedRecords.map((rec) => (
+                    <div
+                      key={rec.id}
+                      onClick={() => handleJumpToSearch(rec.date)}
+                      className="bg-slate-900/90 hover:bg-slate-850 p-2 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-mono-code cursor-pointer transition-colors"
+                      title="點擊以在資料庫中檢視此工單"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="text-cyan-400 font-bold">{rec.date}</span>
+                        <span className="text-slate-400">{rec.km ? `${rec.km.toLocaleString()} km` : ''}</span>
+                        <span className="text-slate-200 truncate">{rec.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                        <span className="text-emerald-400 font-bold">NT$ {rec.totalCost.toLocaleString()}</span>
+                        <ExternalLink className="w-3 h-3 text-slate-400" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -219,8 +282,9 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
                 {activeMilestone.tags.map((tag) => (
                   <span
                     key={tag}
-                    onClick={() => onFilterByKeyword(tag)}
+                    onClick={() => handleJumpToSearch(tag)}
                     className="text-[11px] font-mono-code px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer transition-colors"
+                    title={`在資料庫中搜尋 #${tag}`}
                   >
                     #{tag}
                   </span>
@@ -230,9 +294,9 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
               <button
                 onClick={() => {
                   if (activeMilestone.parts && activeMilestone.parts.length > 0) {
-                    onFilterByKeyword(activeMilestone.parts[0].partNumber.split(' ')[0]);
+                    handleJumpToSearch(activeMilestone.parts[0].partNumber.split(' ')[0]);
                   } else {
-                    onFilterByKeyword(activeMilestone.title.split(' ')[0]);
+                    handleJumpToSearch(activeMilestone.title.split(' ')[0]);
                   }
                 }}
                 className="text-xs font-mono font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer transition-all"
@@ -258,13 +322,13 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
             {activeMilestone.parts && activeMilestone.parts.length > 0 && (
               <div>
                 <span className="text-[11px] font-mono text-slate-400 block mb-1.5">
-                  涉及關鍵零件與料號：
+                  涉及關鍵零件與料號 (點擊檢索)：
                 </span>
                 <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1 scrollbar-thin">
                   {activeMilestone.parts.map((p, pIdx) => (
                     <div
                       key={pIdx}
-                      onClick={() => onFilterByKeyword(p.partNumber.split(' ')[0])}
+                      onClick={() => handleJumpToSearch(p.partNumber.split(' ')[0])}
                       className="text-[11px] font-mono-code bg-slate-900/90 hover:bg-slate-800/90 p-1.5 rounded-lg border border-slate-800 flex items-center justify-between cursor-pointer transition-colors"
                       title="點擊以搜尋此料號"
                     >
@@ -283,14 +347,15 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
             {activeMilestone.obdCodes && activeMilestone.obdCodes.length > 0 && (
               <div className="pt-1">
                 <span className="text-[11px] font-mono text-amber-400 block mb-1">
-                  相關 OBD-II / DTC 故障碼：
+                  相關 OBD-II / DTC 故障碼 (點擊檢索)：
                 </span>
                 <div className="flex flex-wrap gap-1">
                   {activeMilestone.obdCodes.map((code) => (
                     <span
                       key={code}
-                      onClick={() => onFilterByKeyword(code)}
+                      onClick={() => handleJumpToSearch(code)}
                       className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold cursor-pointer hover:bg-amber-500/30"
+                      title={`搜尋故障碼 ${code}`}
                     >
                       {code}
                     </span>

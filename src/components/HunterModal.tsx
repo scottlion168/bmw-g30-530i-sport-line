@@ -1,16 +1,50 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { HUNTER_ALIGNMENT_RECORD } from '../data/milestonesData';
-import { X, Compass, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CarRecord } from '../types';
+import { X, Compass, CheckCircle2, AlertCircle, ExternalLink, Calendar, Gauge, Wrench } from 'lucide-react';
 
 interface HunterModalProps {
   isOpen: boolean;
   onClose: () => void;
+  records?: CarRecord[];
+  onFilterByKeyword?: (kw: string) => void;
 }
 
-export const HunterModal: React.FC<HunterModalProps> = ({ isOpen, onClose }) => {
+export const HunterModal: React.FC<HunterModalProps> = ({
+  isOpen,
+  onClose,
+  records = [],
+  onFilterByKeyword
+}) => {
   if (!isOpen) return null;
 
+  // Find all alignment records dynamically from database
+  const alignmentRecords = useMemo(() => {
+    return records.filter(
+      (r) =>
+        r.hasAlignment ||
+        r.title.includes('定位') ||
+        (r.notes && (r.notes.includes('Hunter') || r.notes.includes('四輪定位') || r.notes.includes('光學定位')))
+    );
+  }, [records]);
+
+  const [selectedRecordId, setSelectedRecordId] = useState<string>(() => {
+    return alignmentRecords.length > 0 ? alignmentRecords[0].id : 'rec-671';
+  });
+
+  const activeRecord = alignmentRecords.find((r) => r.id === selectedRecordId) || alignmentRecords[0];
   const data = HUNTER_ALIGNMENT_RECORD;
+
+  const handleJumpToRecord = (record: CarRecord) => {
+    if (onFilterByKeyword) {
+      onFilterByKeyword(record.date || '定位');
+    }
+    onClose();
+    const tableEl = document.getElementById('records-table-anchor');
+    if (tableEl) {
+      tableEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -22,11 +56,16 @@ export const HunterModal: React.FC<HunterModalProps> = ({ isOpen, onClose }) => 
               <Compass className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-bold font-tech text-white flex items-center gap-2">
-                Hunter 3D 旗艦級四輪光學定位參數對比
-              </h2>
-              <p className="text-xs text-slate-400 font-mono-code">
-                施工日期：2023-12-16 · 施作里程：62,059 km · 配合輪胎底盤專門店
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-bold font-tech text-white">
+                  Hunter 3D 旗艦級四輪光學定位參數對比
+                </h2>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">
+                  已同步資料庫
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 font-mono-code mt-0.5">
+                BMW 530i 旗艦級底盤校正 · 杜絕後輪單邊吃胎偏磨 · 直線巡航推進角歸零 (0°00')
               </p>
             </div>
           </div>
@@ -38,8 +77,32 @@ export const HunterModal: React.FC<HunterModalProps> = ({ isOpen, onClose }) => 
           </button>
         </div>
 
+        {/* Matched Work Order Link Banner */}
+        {activeRecord && (
+          <div className="mt-4 p-3.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-xs font-mono-code text-slate-300">
+              <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 shrink-0">
+                <Wrench className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-white font-bold">對應工單：</span>
+                <span>{activeRecord.date}</span> ·{' '}
+                <span className="text-cyan-300 font-bold">{activeRecord.km ? `${activeRecord.km.toLocaleString()} km` : ''}</span> ·{' '}
+                <span>{activeRecord.title}</span> (金額: NT$ {activeRecord.totalCost.toLocaleString()})
+              </div>
+            </div>
+            <button
+              onClick={() => handleJumpToRecord(activeRecord)}
+              className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer shrink-0"
+            >
+              <span>在工單資料庫查看</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Content Body */}
-        <div className="mt-6 space-y-6">
+        <div className="mt-5 space-y-6">
           {/* Comparison Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Before Box */}
@@ -150,10 +213,13 @@ export const HunterModal: React.FC<HunterModalProps> = ({ isOpen, onClose }) => 
           </div>
 
           {/* Technical Note */}
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1 font-mono-code">
-            <div className="text-cyan-400 font-bold">💡 Hunter 3D 光學定位技術解析：</div>
+          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1.5 font-mono-code">
+            <div className="text-cyan-400 font-bold flex items-center gap-1.5">
+              <span>💡 Hunter HawkEye Elite 3D 光學定位技術解析：</span>
+            </div>
             <p>1. 後軸外傾角精確校正至兩側對稱之 -1°39'，杜絕 BMW 5系後輪常見單邊吃胎偏磨狀況。</p>
             <p>2. 車身推進角 (Thrust Angle) 成功由 -0°08' 調校歸零至 0°00'，確保高速巡航直線行駛極佳之穩定性與方向盤正位感。</p>
+            <p>3. 任何未來新增之底盤定位紀錄，系統皆會自動同步列入上方定位歷史並提供即時檢索連動。</p>
           </div>
         </div>
       </div>

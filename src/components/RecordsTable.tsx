@@ -16,10 +16,8 @@ import {
   Tag,
   Calendar,
   X,
-  Download,
   ShieldCheck,
   CheckCircle2,
-  FileSpreadsheet,
   SquareParking,
   Route,
   Wifi,
@@ -34,7 +32,6 @@ interface RecordsTableProps {
   selectedCategory: RecordCategory;
   onCategoryChange: (cat: RecordCategory) => void;
   onOpenHunter: () => void;
-  onExportCSV: () => void;
 }
 
 export const RecordsTable: React.FC<RecordsTableProps> = ({
@@ -43,8 +40,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
   onSearchChange,
   selectedCategory,
   onCategoryChange,
-  onOpenHunter,
-  onExportCSV
+  onOpenHunter
 }) => {
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [sortField, setSortField] = useState<'date' | 'cost' | 'km'>('date');
@@ -82,16 +78,20 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
         }
         // Keyword search
         if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase().trim();
-          const matchTitle = rec.title.toLowerCase().includes(q);
-          const matchVendor = rec.vendor.toLowerCase().includes(q);
-          const matchNotes = rec.notes ? rec.notes.toLowerCase().includes(q) : false;
-          const matchParts = rec.partNumbers ? rec.partNumbers.some((p) => p.toLowerCase().includes(q)) : false;
-          const matchOBD = rec.obdCodes ? rec.obdCodes.some((code) => code.toLowerCase().includes(q)) : false;
-          const matchDate = rec.date.includes(q);
-          const matchKm = rec.km ? rec.km.toString().includes(q) : false;
+          const rawQ = searchQuery.trim().toLowerCase();
+          const cleanQ = rawQ.startsWith('#') ? rawQ.slice(1).trim() : rawQ;
+          
+          const matchId = rec.id.toLowerCase().includes(rawQ) || rec.id.toLowerCase().includes(cleanQ);
+          const matchTitle = rec.title.toLowerCase().includes(cleanQ);
+          const matchVendor = rec.vendor.toLowerCase().includes(cleanQ);
+          const matchNotes = rec.notes ? rec.notes.toLowerCase().includes(cleanQ) : false;
+          const matchParts = rec.partNumbers ? rec.partNumbers.some((p) => p.toLowerCase().includes(cleanQ)) : false;
+          const matchOBD = rec.obdCodes ? rec.obdCodes.some((code) => code.toLowerCase().includes(cleanQ)) : false;
+          const matchDate = rec.date.includes(cleanQ);
+          const matchKm = rec.km ? rec.km.toString().includes(cleanQ) : false;
+          const matchTags = (rec as any).tags ? (rec as any).tags.some((t: string) => t.toLowerCase().includes(cleanQ)) : false;
 
-          return matchTitle || matchVendor || matchNotes || matchParts || matchOBD || matchDate || matchKm;
+          return matchId || matchTitle || matchVendor || matchNotes || matchParts || matchOBD || matchDate || matchKm || matchTags;
         }
         return true;
       })
@@ -150,7 +150,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
 
   return (
     <div id="records-table-anchor" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5 shadow-xl">
-      {/* Top Header: Read-only Status & Visitor Export */}
+      {/* Top Header: Read-only Status & Visitor Badge */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -167,16 +167,11 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
           </p>
         </div>
 
-        {/* Action Button: Public Export */}
+        {/* Status Tag */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button
-            onClick={onExportCSV}
-            className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/20 transition-all cursor-pointer"
-            title="下載車主脫敏履歷 CSV 檔案"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>下載完整脫敏 CSV</span>
-          </button>
+          <span className="text-xs px-3 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-mono-code">
+            即時雙向聯動中
+          </span>
         </div>
       </div>
 
