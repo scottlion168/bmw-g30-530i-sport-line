@@ -46,6 +46,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         fuelData: [],
         parkingData: [],
         tollData: [],
+        telecomData: [],
         taxData: [],
         finesData: [],
         detailingData: [],
@@ -54,6 +55,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         totalFuel: 0,
         totalParking: 0,
         totalToll: 0,
+        totalTelecom: 0,
         totalTax: 0,
         totalFines: 0,
         totalDetailing: 0,
@@ -72,6 +74,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         fuel: number;
         parking: number;
         toll: number;
+        telecom: number;
         tax: number;
         fines: number;
         detailing: number;
@@ -85,6 +88,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
     let totalFuel = 0;
     let totalParking = 0;
     let totalToll = 0;
+    let totalTelecom = 0;
     let totalTax = 0;
     let totalFines = 0;
     let totalDetailing = 0;
@@ -99,6 +103,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           fuel: 0,
           parking: 0,
           toll: 0,
+          telecom: 0,
           tax: 0,
           fines: 0,
           detailing: 0,
@@ -127,6 +132,9 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       } else if (r.category === 'toll') {
         yearMap[year].toll += r.totalCost;
         totalToll += r.totalCost;
+      } else if (r.category === 'telecom') {
+        yearMap[year].telecom += r.totalCost;
+        totalTelecom += r.totalCost;
       } else if (r.category === 'tax_insurance') {
         yearMap[year].tax += r.totalCost;
         totalTax += r.totalCost;
@@ -151,6 +159,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
     const fuelData = sortedYears.map((y) => yearMap[y].fuel);
     const parkingData = sortedYears.map((y) => yearMap[y].parking);
     const tollData = sortedYears.map((y) => yearMap[y].toll);
+    const telecomData = sortedYears.map((y) => yearMap[y].telecom);
     const taxData = sortedYears.map((y) => yearMap[y].tax);
     const finesData = sortedYears.map((y) => yearMap[y].fines);
     const detailingData = sortedYears.map((y) => yearMap[y].detailing);
@@ -181,6 +190,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       fuelData,
       parkingData,
       tollData,
+      telecomData,
       taxData,
       finesData,
       detailingData,
@@ -189,6 +199,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       totalFuel,
       totalParking,
       totalToll,
+      totalTelecom,
       totalTax,
       totalFines,
       totalDetailing,
@@ -236,6 +247,15 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         data: dynamicStats.tollData,
         backgroundColor: 'rgba(20, 184, 166, 0.85)',
         borderColor: 'rgb(20, 184, 166)',
+        borderWidth: 1,
+        borderRadius: 4,
+        stack: 'Stack 0'
+      },
+      {
+        label: '📶 電信網路規費',
+        data: dynamicStats.telecomData,
+        backgroundColor: 'rgba(14, 165, 233, 0.85)',
+        borderColor: 'rgb(14, 165, 233)',
         borderWidth: 1,
         borderRadius: 4,
         stack: 'Stack 0'
@@ -335,6 +355,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       '汽油燃油油資',
       '停車費用場租',
       '國道通行規費',
+      '車載電信規費',
       '稅務保險規費',
       '交通違規罰單',
       '洗車鍍膜美容'
@@ -346,6 +367,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           dynamicStats.totalFuel,
           dynamicStats.totalParking,
           dynamicStats.totalToll,
+          dynamicStats.totalTelecom,
           dynamicStats.totalTax,
           dynamicStats.totalFines,
           dynamicStats.totalDetailing
@@ -355,6 +377,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           'rgba(6, 182, 212, 0.9)',
           'rgba(99, 102, 241, 0.9)',
           'rgba(20, 184, 166, 0.9)',
+          'rgba(14, 165, 233, 0.9)',
           'rgba(245, 158, 11, 0.9)',
           'rgba(244, 63, 94, 0.9)',
           'rgba(168, 85, 247, 0.9)'
@@ -487,6 +510,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
   const fuelPct = hasRecords ? ((dynamicStats.totalFuel / safeTotal) * 100).toFixed(1) : '0.0';
   const parkingPct = hasRecords ? ((dynamicStats.totalParking / safeTotal) * 100).toFixed(1) : '0.0';
   const tollPct = hasRecords ? ((dynamicStats.totalToll / safeTotal) * 100).toFixed(1) : '0.0';
+  const telecomPct = hasRecords ? ((dynamicStats.totalTelecom / safeTotal) * 100).toFixed(1) : '0.0';
   const taxPct = hasRecords ? ((dynamicStats.totalTax / safeTotal) * 100).toFixed(1) : '0.0';
   const finesPct = hasRecords ? ((dynamicStats.totalFines / safeTotal) * 100).toFixed(1) : '0.0';
   const detailPct = hasRecords ? ((dynamicStats.totalDetailing / safeTotal) * 100).toFixed(1) : '0.0';
@@ -615,6 +639,10 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
             <div className="text-teal-400 font-bold">{tollPct}%</div>
             <div className="text-[10px] text-slate-400">國道通行</div>
           </div>
+          <div className="bg-sky-950/40 border border-sky-900/50 p-1.5 rounded-lg">
+            <div className="text-sky-400 font-bold">{telecomPct}%</div>
+            <div className="text-[10px] text-slate-400">電信規費</div>
+          </div>
           <div className="bg-amber-950/40 border border-amber-900/50 p-1.5 rounded-lg">
             <div className="text-amber-400 font-bold">{taxPct}%</div>
             <div className="text-[10px] text-slate-400">稅務規費</div>
@@ -626,10 +654,6 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           <div className="bg-purple-950/40 border border-purple-900/50 p-1.5 rounded-lg">
             <div className="text-purple-400 font-bold">{detailPct}%</div>
             <div className="text-[10px] text-slate-400">洗車美容</div>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-lg">
-            <div className="text-slate-300 font-bold">100%</div>
-            <div className="text-[10px] text-slate-400">全項總和</div>
           </div>
         </div>
       </div>

@@ -24,6 +24,9 @@ export function detectCategory(catStr: string, titleStr: string): { category: Ca
   if (combined.includes('通行') || combined.includes('etag') || combined.includes('過路費') || combined.includes('國道') || combined.includes('遠通') || combined.includes('高速公路') || combined.includes('toll')) {
     return { category: 'toll', label: '🛣️ 通行規費' };
   }
+  if (combined.includes('電信') || combined.includes('網卡') || combined.includes('4g') || combined.includes('5g') || combined.includes('esim') || combined.includes('sim卡') || combined.includes('網路費') || combined.includes('中華電信') || combined.includes('遠傳') || combined.includes('台灣大') || combined.includes('telecom')) {
+    return { category: 'telecom', label: '📶 電信網路規費' };
+  }
   if (combined.includes('罰單') || combined.includes('超速') || combined.includes('違規') || combined.includes('違停') || combined.includes('拍照') || combined.includes('裁決') || combined.includes('舉發') || combined.includes('罰鍰') || combined.includes('fine') || combined.includes('ticket')) {
     return { category: 'fines', label: '🚨 交通罰單' };
   }
@@ -253,6 +256,7 @@ export function parseCSVText(rawText: string, currentRecords: CarRecord[]): Impo
       taxCost: catObj.category === 'tax_insurance' ? cost : 0,
       parkingCost: catObj.category === 'parking' ? cost : 0,
       tollCost: catObj.category === 'toll' ? cost : 0,
+      telecomCost: catObj.category === 'telecom' ? cost : 0,
       finesCost: catObj.category === 'fines' ? cost : 0,
       otherCost: catObj.category === 'other' ? cost : 0,
       contractCost: 0,

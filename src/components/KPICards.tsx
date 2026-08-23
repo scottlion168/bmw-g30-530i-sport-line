@@ -9,6 +9,7 @@ import {
   Calendar,
   SquareParking,
   Route,
+  Wifi,
   AlertTriangle,
   FileText,
   Flag
@@ -28,6 +29,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
   let totalFuelCost = 0;
   let totalParkingCost = 0;
   let totalTollCost = 0;
+  let totalTelecomCost = 0;
   let totalTaxCost = 0;
   let totalFinesCost = 0;
   let totalDetailingCost = 0;
@@ -54,6 +56,10 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
 
     totalTollCost = records
       .filter((r) => r.category === 'toll')
+      .reduce((sum, r) => sum + r.totalCost, 0);
+
+    totalTelecomCost = records
+      .filter((r) => r.category === 'telecom')
       .reduce((sum, r) => sum + r.totalCost, 0);
 
     totalTaxCost = records
@@ -103,6 +109,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
   const fuelPct = hasRecords ? ((totalFuelCost / safeTotal) * 100).toFixed(1) : '0.0';
   const parkingPct = hasRecords ? ((totalParkingCost / safeTotal) * 100).toFixed(1) : '0.0';
   const tollPct = hasRecords ? ((totalTollCost / safeTotal) * 100).toFixed(1) : '0.0';
+  const telecomPct = hasRecords ? ((totalTelecomCost / safeTotal) * 100).toFixed(1) : '0.0';
   const taxFinesPct = hasRecords ? (((totalTaxCost + totalFinesCost) / safeTotal) * 100).toFixed(1) : '0.0';
   const detailingPct = hasRecords ? ((totalDetailingCost / safeTotal) * 100).toFixed(1) : '0.0';
 
@@ -212,7 +219,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
       </div>
 
       {/* Secondary Cost Breakdown Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
         {/* Sub-Card 1: Maintenance */}
         <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between gap-2">
@@ -277,7 +284,23 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
           </div>
         </div>
 
-        {/* Sub-Card 5: Tax & Fines */}
+        {/* Sub-Card 5: Telecom */}
+        <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-3 flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-2">
+            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+              <Wifi className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-[11px] font-bold text-sky-400 font-mono">{telecomPct}%</span>
+          </div>
+          <div className="mt-2">
+            <div className="text-[11px] text-slate-400 font-mono-code truncate">📶 電信網路</div>
+            <div className="text-sm font-tech font-bold text-slate-100 mt-0.5">
+              NT$ {totalTelecomCost.toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        {/* Sub-Card 6: Tax & Fines */}
         <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between gap-2">
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -295,7 +318,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
           </div>
         </div>
 
-        {/* Sub-Card 6: Detailing & Others */}
+        {/* Sub-Card 7: Detailing */}
         <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between gap-2">
             <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">

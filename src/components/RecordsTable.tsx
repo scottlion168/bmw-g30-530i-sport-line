@@ -22,6 +22,7 @@ import {
   FileSpreadsheet,
   SquareParking,
   Route,
+  Wifi,
   AlertTriangle,
   Flag
 } from 'lucide-react';
@@ -57,6 +58,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
     { key: 'fuel', label: '⛽ 油資紀錄', icon: Fuel },
     { key: 'parking', label: '🅿️ 停車費用', icon: SquareParking },
     { key: 'toll', label: '🛣️ 通行規費', icon: Route },
+    { key: 'telecom', label: '📶 電信規費', icon: Wifi },
     { key: 'tax_insurance', label: '🪪 稅務與規費', icon: FileText },
     { key: 'fines', label: '🚨 交通罰單', icon: AlertTriangle },
     { key: 'detailing', label: '🧼 洗車美容', icon: Sparkles },
@@ -127,6 +129,8 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">🅿️ 停車費用</span>;
       case 'toll':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-teal-500/20 text-teal-300 border border-teal-500/30">🛣️ 通行規費</span>;
+      case 'telecom':
+        return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-sky-500/20 text-sky-300 border border-sky-500/30">📶 電信規費</span>;
       case 'tax_insurance':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">🪪 稅務規費</span>;
       case 'fines':
@@ -499,6 +503,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
                               rec.fuelCost > 0 ||
                               (rec.parkingCost && rec.parkingCost > 0) ||
                               (rec.tollCost && rec.tollCost > 0) ||
+                              (rec.telecomCost && rec.telecomCost > 0) ||
                               (rec.finesCost && rec.finesCost > 0) ||
                               rec.detailingCost > 0 ||
                               rec.taxCost > 0 ||
@@ -523,6 +528,11 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
                                 {Boolean(rec.tollCost && rec.tollCost > 0) && (
                                   <span className="px-2 py-0.5 rounded bg-teal-950/70 text-teal-300 border border-teal-800/60">
                                     通行費 NT${rec.tollCost!.toLocaleString()}
+                                  </span>
+                                )}
+                                {Boolean(rec.telecomCost && rec.telecomCost > 0) && (
+                                  <span className="px-2 py-0.5 rounded bg-sky-950/70 text-sky-300 border border-sky-800/60">
+                                    電信 NT${rec.telecomCost!.toLocaleString()}
                                   </span>
                                 )}
                                 {Boolean(rec.finesCost && rec.finesCost > 0) && (
