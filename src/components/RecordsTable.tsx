@@ -16,15 +16,10 @@ import {
   Tag,
   Calendar,
   X,
-  Plus,
-  Edit3,
-  Trash2,
-  Upload,
   Download,
-  RotateCcw,
-  FileSpreadsheet,
-  Database,
-  Trash
+  ShieldCheck,
+  CheckCircle2,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface RecordsTableProps {
@@ -34,12 +29,6 @@ interface RecordsTableProps {
   selectedCategory: RecordCategory;
   onCategoryChange: (cat: RecordCategory) => void;
   onOpenHunter: () => void;
-  onOpenAddModal: () => void;
-  onOpenEditModal: (record: CarRecord) => void;
-  onOpenBatchImport: () => void;
-  onDeleteRecord: (id: string) => void;
-  onResetDefault: () => void;
-  onClearAll: () => void;
   onExportCSV: () => void;
 }
 
@@ -50,12 +39,6 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
   selectedCategory,
   onCategoryChange,
   onOpenHunter,
-  onOpenAddModal,
-  onOpenEditModal,
-  onOpenBatchImport,
-  onDeleteRecord,
-  onResetDefault,
-  onClearAll,
   onExportCSV
 }) => {
   const [selectedYear, setSelectedYear] = useState<string>('all');
@@ -146,74 +129,33 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5 shadow-xl">
-      {/* Top Header & Data Operations Toolbar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+    <div id="records-table-anchor" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5 shadow-xl">
+      {/* Top Header: Read-only Status & Visitor Export */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg sm:text-xl font-bold font-tech text-white flex items-center gap-2">
-              全週期履歷互動資料庫
+              全週期履歷公開資料庫
             </h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">
-              共 {records.length} 筆工單 (已持久化存儲)
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              車主唯讀認證 (防篡改)
             </span>
           </div>
           <p className="text-xs text-slate-400 font-mono-code mt-0.5">
-            即時搜尋料號/DTC故障碼/項目 · 支援點擊展開零件清單 · 內建防呆查重驗證
+            共收錄 {records.length} 筆真實維護工單 · 支援料號/DTC代碼即時檢索與點擊展開詳情
           </p>
         </div>
 
-        {/* Action Buttons: Add, Batch Import, Clear, Reset */}
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={onOpenAddModal}
-            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/20 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>新增單筆</span>
-          </button>
-
-          <button
-            onClick={onOpenBatchImport}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer"
-            title="貼上 Excel / CSV 批次匯入並自動防呆查重"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>批次匯入 (防呆)</span>
-          </button>
-
+        {/* Action Button: Public Export */}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={onExportCSV}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer"
-            title="匯出目前資料庫至 CSV"
+            className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+            title="下載車主脫敏履歷 CSV 檔案"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">匯出</span>
-          </button>
-
-          <button
-            onClick={() => {
-              if (confirm('確定要【清空目前所有工單資料】嗎？\n清空後您可以立即使用「批次匯入」貼上您專屬的 CSV 數據！')) {
-                onClearAll();
-              }
-            }}
-            className="px-2.5 py-1.5 rounded-lg bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-800/40 text-xs font-mono flex items-center gap-1 transition-all cursor-pointer"
-            title="清空目前所有 CSV 工單資料以重新匯入"
-          >
-            <Trash className="w-3.5 h-3.5" />
-            <span>清空資料庫</span>
-          </button>
-
-          <button
-            onClick={() => {
-              if (confirm('確定要還原為【官方脫敏展示資料集】嗎？')) {
-                onResetDefault();
-              }
-            }}
-            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 transition-all cursor-pointer"
-            title="載入官方脫敏範例資料"
-          >
-            <RotateCcw className="w-4 h-4" />
+            <span>下載完整脫敏 CSV</span>
           </button>
         </div>
       </div>
@@ -249,9 +191,9 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
             <button
               key={yr}
               onClick={() => setSelectedYear(yr)}
-              className={`px-2.5 py-1 text-xs font-mono rounded-lg shrink-0 transition-all cursor-pointer ${
+              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 selectedYear === yr
-                  ? 'bg-blue-600 text-white font-bold shadow'
+                  ? 'bg-blue-600 text-white font-bold shadow-sm'
                   : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
               }`}
             >
@@ -262,56 +204,68 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-slate-800/80">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
         {categories.map((cat) => {
           const Icon = cat.icon;
           const isActive = selectedCategory === cat.key;
+          const count =
+            cat.key === 'all'
+              ? records.length
+              : records.filter((r) => r.category === cat.key).length;
+
           return (
             <button
               key={cat.key}
               onClick={() => onCategoryChange(cat.key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg shrink-0 transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer border ${
                 isActive
-                  ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40 font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-blue-600/20 border-blue-500 text-blue-300 shadow-sm'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{cat.label}</span>
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                  isActive ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-800 text-slate-400'
+                }`}
+              >
+                {count}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Stats Summary Line for Current Filter */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-400 bg-slate-950/60 px-3 py-2 rounded-xl border border-slate-800/60">
-        <div className="flex items-center gap-2">
-          <span>篩選結果：</span>
-          <span className="text-slate-200 font-bold">{filteredRecords.length} 筆</span>
-          <span>(佔全車總工單 {((filteredRecords.length / Math.max(records.length, 1)) * 100).toFixed(0)}%)</span>
+      {/* Current Filter Result Summary */}
+      <div className="flex flex-wrap items-center justify-between text-xs text-slate-400 font-mono-code px-1">
+        <div>
+          顯示 <span className="text-white font-bold">{filteredRecords.length}</span> 筆工單紀錄
+          {searchQuery && (
+            <span className="text-cyan-400 ml-2">
+              (包含關鍵字: "{searchQuery}")
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span>篩選項目金額加總：</span>
-          <span className="text-emerald-400 font-bold text-sm">
+        <div className="text-slate-300">
+          此篩選條件總計：
+          <span className="text-white font-bold font-tech text-sm ml-1">
             NT$ {totalFilteredCost.toLocaleString()}
           </span>
         </div>
       </div>
 
-      {/* Responsive Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80">
-        <table className="w-full text-left text-xs sm:text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-slate-800 bg-slate-900/90 text-slate-400 font-mono text-xs">
+      {/* Main Table */}
+      <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <table className="w-full text-left text-xs sm:text-sm">
+          <thead className="bg-slate-950/90 text-slate-400 font-mono-code uppercase text-[11px] border-b border-slate-800">
+            <tr>
               <th
                 onClick={() => {
-                  if (sortField === 'date') setSortAsc(!sortAsc);
-                  else {
-                    setSortField('date');
-                    setSortAsc(false);
-                  }
+                  setSortField('date');
+                  setSortAsc(!sortAsc);
                 }}
-                className="py-3 px-3 sm:px-4 cursor-pointer hover:text-slate-200 select-none whitespace-nowrap"
+                className="py-3 px-3 sm:px-4 cursor-pointer hover:text-white transition-colors whitespace-nowrap"
               >
                 <div className="flex items-center gap-1">
                   <span>日期</span>
@@ -320,71 +274,58 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
               </th>
               <th
                 onClick={() => {
-                  if (sortField === 'km') setSortAsc(!sortAsc);
-                  else {
-                    setSortField('km');
-                    setSortAsc(false);
-                  }
+                  setSortField('km');
+                  setSortAsc(!sortAsc);
                 }}
-                className="py-3 px-3 sm:px-4 cursor-pointer hover:text-slate-200 select-none whitespace-nowrap"
+                className="py-3 px-3 sm:px-4 cursor-pointer hover:text-white transition-colors whitespace-nowrap"
               >
                 <div className="flex items-center gap-1">
-                  <span>里程 (km)</span>
+                  <span>儀表里程</span>
                   <ArrowUpDown className="w-3 h-3" />
                 </div>
               </th>
-              <th className="py-3 px-3 sm:px-4 whitespace-nowrap">分類</th>
-              <th className="py-3 px-4 min-w-[200px]">項目說明 / 零件備註</th>
-              <th className="py-3 px-4 whitespace-nowrap">施作店家</th>
+              <th className="py-3 px-3 sm:px-4 whitespace-nowrap">類別</th>
+              <th className="py-3 px-4 min-w-[200px]">項目說明 / 零件料號</th>
+              <th className="py-3 px-4 whitespace-nowrap">施作保修廠</th>
               <th
                 onClick={() => {
-                  if (sortField === 'cost') setSortAsc(!sortAsc);
-                  else {
-                    setSortField('cost');
-                    setSortAsc(false);
-                  }
+                  setSortField('cost');
+                  setSortAsc(!sortAsc);
                 }}
-                className="py-3 px-4 cursor-pointer hover:text-slate-200 select-none whitespace-nowrap text-right"
+                className="py-3 px-4 text-right cursor-pointer hover:text-white transition-colors whitespace-nowrap"
               >
                 <div className="flex items-center justify-end gap-1">
                   <span>實付金額</span>
                   <ArrowUpDown className="w-3 h-3" />
                 </div>
               </th>
-              <th className="py-3 px-3 text-center whitespace-nowrap">操作</th>
+              <th className="py-3 px-3 text-center whitespace-nowrap">詳情</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60 font-sans">
             {filteredRecords.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-slate-400 font-mono">
-                  <div className="space-y-3">
-                    <p className="text-slate-300 font-semibold">目前資料庫為空或查無相符紀錄</p>
+                  <div className="space-y-2">
+                    <p className="text-slate-300 font-semibold">查無相符之工單紀錄</p>
                     <p className="text-xs text-slate-500">
-                      您可以點擊右上角「<span className="text-emerald-400 font-bold">批次匯入 (防呆)</span>」貼上您的 CSV 數據，或點擊「<span className="text-blue-400">新增單筆</span>」開始記錄。
+                      請嘗試清除搜尋關鍵字或選擇其他分類與年份標籤。
                     </p>
-                    <button
-                      onClick={onOpenBatchImport}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold shadow-lg shadow-emerald-600/20 cursor-pointer"
-                    >
-                      <Upload className="w-4 h-4" />
-                      <span>立即開啟批次匯入 (貼上 CSV)</span>
-                    </button>
                   </div>
                 </td>
               </tr>
             ) : (
               filteredRecords.map((rec) => {
                 const isExpanded = expandedRowId === rec.id;
-                const hasDetailedNotes = !!(rec.notes || rec.partNumbers || rec.obdCodes || rec.hasAlignment);
+                const hasDetailedNotes = !!(rec.notes || (rec.partNumbers && rec.partNumbers.length > 0) || (rec.obdCodes && rec.obdCodes.length > 0) || rec.hasAlignment);
 
                 return (
                   <React.Fragment key={rec.id}>
                     <tr
                       onClick={() => hasDetailedNotes && toggleRow(rec.id)}
-                      className={`hover:bg-slate-900/80 transition-colors ${
+                      className={`hover:bg-slate-800/60 transition-colors ${
                         hasDetailedNotes ? 'cursor-pointer' : ''
-                      } ${isExpanded ? 'bg-slate-900/90' : ''}`}
+                      } ${isExpanded ? 'bg-slate-800/80' : ''}`}
                     >
                       {/* Date */}
                       <td className="py-3 px-3 sm:px-4 whitespace-nowrap font-mono-code text-slate-300 text-xs">
@@ -452,44 +393,22 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
                         )}
                       </td>
 
-                      {/* Actions (Edit / Delete / Expand) */}
+                      {/* Action: Expand Details Toggle */}
                       <td className="py-3 px-3 text-center text-slate-400 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1">
+                        {hasDetailedNotes ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              onOpenEditModal(rec);
+                              toggleRow(rec.id);
                             }}
-                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-blue-400 transition-all cursor-pointer"
-                            title="編輯工單紀錄"
+                            className="p-1 rounded hover:bg-slate-700 transition-all text-slate-400 hover:text-white cursor-pointer"
+                            title="展開完整料號與施工細節"
                           >
-                            <Edit3 className="w-3.5 h-3.5" />
+                            {isExpanded ? <ChevronUp className="w-4 h-4 text-blue-400" /> : <ChevronDown className="w-4 h-4" />}
                           </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm(`確定要刪除這筆紀錄嗎？\n[${rec.date}] ${rec.title}`)) {
-                                onDeleteRecord(rec.id);
-                              }
-                            }}
-                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-red-400 transition-all cursor-pointer"
-                            title="刪除此紀錄"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                          {hasDetailedNotes && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleRow(rec.id);
-                              }}
-                              className="p-1 rounded hover:bg-slate-700 transition-all text-slate-400 hover:text-white cursor-pointer"
-                              title="展開詳情"
-                            >
-                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                            </button>
-                          )}
-                        </div>
+                        ) : (
+                          <span className="text-slate-700">-</span>
+                        )}
                       </td>
                     </tr>
 
@@ -498,77 +417,82 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
                       <tr className="bg-slate-900/95 border-b border-slate-800">
                         <td colSpan={7} className="p-4 sm:p-5">
                           <div className="space-y-3 bg-slate-950/80 rounded-xl p-4 border border-slate-800">
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                              <span className="text-xs font-mono-code font-bold text-blue-400 flex items-center gap-1.5">
-                                🔧 施工技術細節 & 零件料號備註
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-mono text-slate-400">
-                                  日期：{rec.date} · 施工里程：{rec.km ? `${rec.km.toLocaleString()} km` : '無里程登記'}
-                                </span>
-                                <button
-                                  onClick={() => onOpenEditModal(rec)}
-                                  className="text-[11px] px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/40 hover:bg-blue-600/40 font-mono flex items-center gap-1 cursor-pointer transition-all"
-                                >
-                                  <Edit3 className="w-3 h-3" /> 編輯此筆
-                                </button>
-                              </div>
-                            </div>
-
+                            {/* Notes */}
                             {rec.notes && (
-                              <div className="text-xs text-slate-300 font-sans leading-relaxed whitespace-pre-line bg-slate-900/70 p-3 rounded-lg border border-slate-800">
-                                {rec.notes}
+                              <div>
+                                <div className="text-xs font-semibold text-slate-400 font-mono-code mb-1">
+                                  📋 施工細節與保養備註：
+                                </div>
+                                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
+                                  {rec.notes}
+                                </p>
                               </div>
                             )}
 
-                            {/* Part Numbers Chips */}
+                            {/* Part numbers grid */}
                             {rec.partNumbers && rec.partNumbers.length > 0 && (
-                              <div>
-                                <span className="text-[11px] font-mono-code text-slate-400 block mb-1.5">
-                                  📦 涉及原廠/品牌零件規格清單：
-                                </span>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {rec.partNumbers.map((part, pIdx) => (
-                                    <span
-                                      key={pIdx}
-                                      className="px-2.5 py-1 text-xs rounded-lg bg-slate-900 text-cyan-300 border border-cyan-800/40 font-mono-code"
+                              <div className="pt-2 border-t border-slate-800/80">
+                                <div className="text-xs font-semibold text-cyan-400 font-mono-code mb-1.5 flex items-center gap-1">
+                                  <Tag className="w-3.5 h-3.5" /> 更換零件 / 原廠料號清單：
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                  {rec.partNumbers.map((p, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSearchChange(p.split(' ')[0]);
+                                      }}
+                                      className="text-xs font-mono-code bg-slate-900 hover:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700/70 text-slate-300 flex items-center justify-between cursor-pointer transition-colors"
+                                      title="點擊將此料號帶入搜尋欄"
                                     >
-                                      {part}
+                                      <span>{p}</span>
+                                      <Search className="w-3 h-3 text-slate-500" />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* OBD Codes */}
+                            {rec.obdCodes && rec.obdCodes.length > 0 && (
+                              <div className="pt-2 border-t border-slate-800/80">
+                                <div className="text-xs font-semibold text-amber-400 font-mono-code mb-1.5 flex items-center gap-1">
+                                  <AlertOctagon className="w-3.5 h-3.5" /> 關聯 OBD-II / DTC 故障碼：
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {rec.obdCodes.map((c, idx) => (
+                                    <span
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSearchChange(c);
+                                      }}
+                                      className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-mono font-bold cursor-pointer hover:bg-amber-500/30 transition-colors"
+                                      title="點擊將故障碼帶入搜尋欄"
+                                    >
+                                      {c}
                                     </span>
                                   ))}
                                 </div>
                               </div>
                             )}
 
-                            {/* OBD Diagnostic codes if any */}
-                            {rec.obdCodes && rec.obdCodes.length > 0 && (
-                              <div className="flex items-center gap-2 pt-1">
-                                <span className="text-[11px] font-mono-code text-amber-400">
-                                  ⚠️ OBD 故障碼代碼：
-                                </span>
-                                {rec.obdCodes.map((code) => (
-                                  <span
-                                    key={code}
-                                    className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-xs font-bold"
-                                  >
-                                    {code}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Hunter Alignment shortcut */}
+                            {/* Hunter 3D Alignment Callout */}
                             {rec.hasAlignment && (
-                              <div className="pt-2">
+                              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                                <span className="text-xs text-slate-400 font-mono">
+                                  本次施作包含 Hunter HawkEye Elite 3D 原廠電腦定位底盤數據。
+                                </span>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     onOpenHunter();
                                   }}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-900/50 transition-all text-xs font-mono-code cursor-pointer"
+                                  className="px-3 py-1 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-mono flex items-center gap-1 cursor-pointer transition-all"
                                 >
                                   <Compass className="w-3.5 h-3.5" />
-                                  <span>點擊開啟 Hunter 3D 四輪定位前/後對比參數看板</span>
+                                  <span>查看 3D 定位參數表</span>
                                 </button>
                               </div>
                             )}

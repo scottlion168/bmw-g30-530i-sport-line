@@ -39,20 +39,20 @@ export function detectCategory(catStr: string, titleStr: string): { category: Ca
   return { category: 'maintenance', label: '🛠️ 保養維修' };
 }
 
-// Load records from LocalStorage or default to empty / built-in dataset
+// Load records from LocalStorage or default to built-in dataset
 export function loadRecords(): CarRecord[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved !== null) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        return parsed; // Can be [] if user cleared
+        return parsed; // Returns saved records (even if empty [])
       }
     }
   } catch (err) {
     console.warn('Failed to read from localStorage, using default records', err);
   }
-  return []; // Default empty so user can import cleanly, or user can load sample
+  return DEFAULT_RECORDS; // Default to static dataset in recordsData.ts
 }
 
 // Save records to LocalStorage and update timestamp

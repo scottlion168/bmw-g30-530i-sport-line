@@ -8,27 +8,21 @@ import { VisitorStats } from './components/VisitorStats';
 import { HunterModal } from './components/HunterModal';
 import { OBDModal } from './components/OBDModal';
 import { HiddenFeaturesModal } from './components/HiddenFeaturesModal';
-import { AddEditRecordModal } from './components/AddEditRecordModal';
-import { BatchImportModal } from './components/BatchImportModal';
 import { RecordCategory, MilestoneItem, CarRecord } from './types';
-import { loadRecords, saveRecordsToStorage, resetDatabaseToDefault, clearAllRecords, getLastUpdatedTime } from './utils/recordManager';
-import { SUMMARY_STATS } from './data/yearlyData';
+import { ALL_RECORDS } from './data/recordsData';
+import { getLastUpdatedTime } from './utils/recordManager';
 import confetti from 'canvas-confetti';
-import { ShieldCheck, Cpu, Database, Wrench, Fuel, Car, Info, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Car, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
-  const [records, setRecords] = useState<CarRecord[]>(() => loadRecords());
+  // Pure static record source from src/data/recordsData.ts
+  const [records] = useState<CarRecord[]>(ALL_RECORDS);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<RecordCategory>('all');
   const [isHunterOpen, setIsHunterOpen] = useState<boolean>(false);
   const [isOBDOpen, setIsOBDOpen] = useState<boolean>(false);
   const [isHiddenFeaturesOpen, setIsHiddenFeaturesOpen] = useState<boolean>(false);
-  
-  // Data management modals
-  const [isAddEditOpen, setIsAddEditOpen] = useState<boolean>(false);
-  const [recordToEdit, setRecordToEdit] = useState<CarRecord | null>(null);
-  const [isBatchImportOpen, setIsBatchImportOpen] = useState<boolean>(false);
-  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>(() => getLastUpdatedTime());
+  const [lastUpdatedTime] = useState<string>(() => getLastUpdatedTime());
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'warn' } | null>(null);
@@ -40,69 +34,7 @@ export default function App() {
     }, 4000);
   };
 
-  const updateTimestamp = () => {
-    const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
-    setLastUpdatedTime(nowStr);
-  };
-
-  // Save (Add or Edit) Record Handler
-  const handleSaveRecord = (savedRecord: CarRecord, isEdit: boolean) => {
-    let updated: CarRecord[];
-    if (isEdit) {
-      updated = records.map((r) => (r.id === savedRecord.id ? savedRecord : r));
-      showToast(`已成功更新工單：[${savedRecord.date}] ${savedRecord.title}`, 'success');
-    } else {
-      updated = [savedRecord, ...records];
-      showToast(`已新增 1 筆工單：[${savedRecord.date}] ${savedRecord.title}`, 'success');
-    }
-    setRecords(updated);
-    saveRecordsToStorage(updated);
-    updateTimestamp();
-  };
-
-  // Delete Record Handler
-  const handleDeleteRecord = (id: string) => {
-    const target = records.find((r) => r.id === id);
-    const updated = records.filter((r) => r.id !== id);
-    setRecords(updated);
-    saveRecordsToStorage(updated);
-    updateTimestamp();
-    showToast(`已刪除工單：${target ? `[${target.date}] ${target.title}` : id}`, 'info');
-  };
-
-  // Batch Import Completion Handler
-  const handleBatchImportComplete = (
-    updatedRecords: CarRecord[],
-    addedCount: number,
-    overwrittenCount: number,
-    skippedCount: number
-  ) => {
-    setRecords(updatedRecords);
-    saveRecordsToStorage(updatedRecords);
-    updateTimestamp();
-    showToast(
-      `批次作業完成！新增 ${addedCount} 筆，覆蓋 ${overwrittenCount} 筆，智慧防呆跳過 ${skippedCount} 筆重複資料。`,
-      'success'
-    );
-  };
-
-  // Reset to Default Dataset
-  const handleResetDefault = () => {
-    const defaults = resetDatabaseToDefault();
-    setRecords(defaults);
-    updateTimestamp();
-    showToast('已還原為官方預設脫敏數據集！', 'info');
-  };
-
-  // Clear all records completely
-  const handleClearAll = () => {
-    const cleared = clearAllRecords();
-    setRecords(cleared);
-    updateTimestamp();
-    showToast('已清空所有工單資料！您現在可以點擊「批次匯入」貼上專屬 CSV 數據。', 'warn');
-  };
-
-  // CSV Exporter for desensitized dynamic dataset
+  // CSV Exporter for visitors
   const handleExportCSV = () => {
     try {
       confetti({ particleCount: 40, spread: 60, origin: { y: 0.1 } });
@@ -126,7 +58,7 @@ export default function App() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast('已成功匯出完整 CSV 檔案！', 'success');
+      showToast('已成功匯出完整脫敏 CSV 檔案！', 'success');
     } catch (err) {
       console.error('Export CSV error:', err);
     }
@@ -150,16 +82,6 @@ export default function App() {
     if (tableEl) {
       tableEl.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const openAddModal = () => {
-    setRecordToEdit(null);
-    setIsAddEditOpen(true);
-  };
-
-  const openEditModal = (record: CarRecord) => {
-    setRecordToEdit(record);
-    setIsAddEditOpen(true);
   };
 
   return (
@@ -219,7 +141,7 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono-code text-slate-400 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-cyan-400" />
-              <span>隱私脫敏保護中</span>
+              <span>車主認證唯讀履歷</span>
             </div>
             <div className="w-1 h-1 rounded-full bg-slate-700"></div>
             <div>前後配 19吋 (245/40 & 275/35)</div>
@@ -234,14 +156,11 @@ export default function App() {
           totalRecordsCount={records.length}
         />
 
-        {/* 1. KPI Dashboard Stats Cards (Calculated dynamically from records) */}
+        {/* 1. KPI Dashboard Stats Cards (Calculated dynamically from static records) */}
         <KPICards records={records} />
 
-        {/* 2. Charts Section (Chart.js Visualization - Completely Dynamic) */}
-        <Charts
-          records={records}
-          onOpenBatchImport={() => setIsBatchImportOpen(true)}
-        />
+        {/* 2. Charts Section (Chart.js Visualization - Calculated dynamically) */}
+        <Charts records={records} />
 
         {/* 3. B46 Key Common Issues & Preventive Maintenance Radar */}
         <MilestonesSection
@@ -250,7 +169,7 @@ export default function App() {
           onFilterByKeyword={handleFilterByKeyword}
         />
 
-        {/* 4. Filterable, Searchable & Editable Records Table */}
+        {/* 4. Filterable, Searchable Read-Only Records Table */}
         <div id="records-table-anchor">
           <RecordsTable
             records={records}
@@ -259,12 +178,6 @@ export default function App() {
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
             onOpenHunter={() => setIsHunterOpen(true)}
-            onOpenAddModal={openAddModal}
-            onOpenEditModal={openEditModal}
-            onOpenBatchImport={() => setIsBatchImportOpen(true)}
-            onDeleteRecord={handleDeleteRecord}
-            onResetDefault={handleResetDefault}
-            onClearAll={handleClearAll}
             onExportCSV={handleExportCSV}
           />
         </div>
@@ -284,30 +197,10 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Interactive Modals */}
+      {/* Interactive Read-Only Modals */}
       <HunterModal isOpen={isHunterOpen} onClose={() => setIsHunterOpen(false)} />
       <OBDModal isOpen={isOBDOpen} onClose={() => setIsOBDOpen(false)} />
       <HiddenFeaturesModal isOpen={isHiddenFeaturesOpen} onClose={() => setIsHiddenFeaturesOpen(false)} />
-      
-      {/* Add / Edit Record Modal with Anti-Duplicate Detection */}
-      <AddEditRecordModal
-        isOpen={isAddEditOpen}
-        onClose={() => {
-          setIsAddEditOpen(false);
-          setRecordToEdit(null);
-        }}
-        initialData={recordToEdit}
-        existingRecords={records}
-        onSave={handleSaveRecord}
-      />
-
-      {/* Batch Import Modal with Deduplication Strategy */}
-      <BatchImportModal
-        isOpen={isBatchImportOpen}
-        onClose={() => setIsBatchImportOpen(false)}
-        currentRecords={records}
-        onImportComplete={handleBatchImportComplete}
-      />
     </div>
   );
 }

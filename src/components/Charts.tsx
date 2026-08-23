@@ -31,10 +31,9 @@ ChartJS.register(
 
 interface ChartsProps {
   records?: CarRecord[];
-  onOpenBatchImport?: () => void;
 }
 
-export const Charts: React.FC<ChartsProps> = ({ records = [], onOpenBatchImport }) => {
+export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
   const [activeTab, setActiveTab] = useState<'yearly' | 'efficiency'>('yearly');
   const hasRecords = records && records.length > 0;
 
@@ -389,20 +388,11 @@ export const Charts: React.FC<ChartsProps> = ({ records = [], onOpenBatchImport 
             <BarChart3 className="w-8 h-8" />
           </div>
           <h3 className="text-base font-bold text-slate-200 font-tech">
-            歷年養車支出趨勢圖（等待工單匯入）
+            歷年養車支出趨勢圖
           </h3>
-          <p className="text-xs text-slate-400 font-mono-code max-w-md mt-1 mb-4">
-            目前資料庫為空。當您匯入或新增 CSV 工單後，系統將自動按年份彙整「保養維修、燃油油資、稅務規費、洗車美容」並繪製成堆疊柱狀圖。
+          <p className="text-xs text-slate-400 font-mono-code max-w-md mt-1">
+            目前靜態資料庫尚無紀錄。於 recordsData.ts 加入工單後，系統將自動按年份彙整「保養維修、燃油油資、稅務規費、洗車美容」並繪製成堆疊柱狀圖。
           </p>
-          {onOpenBatchImport && (
-            <button
-              onClick={onOpenBatchImport}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer"
-            >
-              <UploadCloud className="w-4 h-4" />
-              <span>點擊批次匯入 CSV 工單</span>
-            </button>
-          )}
         </div>
 
         <div className="glass-panel rounded-2xl p-6 border-slate-800 flex flex-col items-center justify-center text-center min-h-[300px]">
