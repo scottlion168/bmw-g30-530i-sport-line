@@ -66,13 +66,33 @@ export function saveRecordsToStorage(records: CarRecord[]): void {
   }
 }
 
-// Get last updated time string
-export function getLastUpdatedTime(): string {
+// Get last updated time string (Calculates from latest record date or build timestamp)
+export function getLastUpdatedTime(records: CarRecord[] = DEFAULT_RECORDS): string {
   try {
-    return localStorage.getItem(LAST_UPDATED_KEY) || '2026-08-22 18:20';
-  } catch {
-    return '2026-08-22 18:20';
+    // 1. If records exist, find the newest record date
+    if (records && records.length > 0) {
+      const validDates = records
+        .map((r) => r.date)
+        .filter((d) => Boolean(d) && d.match(/^\d{4}-\d{2}-\d{2}/))
+        .sort();
+      
+      if (validDates.length > 0) {
+        const latestRecordDate = validDates[validDates.length - 1];
+        return latestRecordDate; // e.g. "2025-05-18"
+      }
+    }
+  } catch (err) {
+    console.warn('Error calculating latest record date:', err);
   }
+
+  // 2. Fallback to build timestamp or current date
+  try {
+    if (typeof __BUILD_TIMESTAMP__ !== 'undefined' && __BUILD_TIMESTAMP__) {
+      return __BUILD_TIMESTAMP__;
+    }
+  } catch {}
+
+  return new Date().toISOString().slice(0, 10);
 }
 
 // Reset database to built-in clean dataset
