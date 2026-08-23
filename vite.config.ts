@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: './', // 👈 加了這一行，修正 GitHub Pages 相對路徑
+    base: '/bmw-g30-530i-sport-line/', // 👈 精確指定 GitHub 倉庫名稱路徑
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -13,10 +13,7 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
