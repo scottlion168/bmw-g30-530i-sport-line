@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Eye, Calendar, Clock, ShieldCheck, Globe, Wifi } from 'lucide-react';
+import { Eye, Calendar, Clock, Globe, Wifi } from 'lucide-react';
 
 interface VisitorStatsProps {
   lastUpdatedTime?: string;
@@ -7,56 +7,52 @@ interface VisitorStatsProps {
 }
 
 export const VisitorStats: React.FC<VisitorStatsProps> = ({
-  lastUpdatedTime = new Date().toISOString().slice(0, 16).replace('T', ' '),
+  lastUpdatedTime = new Date().toISOString().slice(0, 10),
   totalRecordsCount
 }) => {
-  // Visitor counter state using localStorage for local simulation + persistent baseline
+  // Real count tracking starting genuinely from 1 for fresh session
   const [stats, setStats] = React.useState({
-    activeNow: 3,
-    monthlyTotal: 1284,
-    allTimeTotal: 8642
+    activeNow: 1,
+    monthlyTotal: 1,
+    allTimeTotal: 1
   });
 
   React.useEffect(() => {
-    // Key for visit counting
-    const STORAGE_KEY_VISITORS = 'bmw_g30_visitor_stats_v1';
-    let currentStats = {
-      activeNow: Math.floor(Math.random() * 4) + 3, // Realistic dynamic 3-6 concurrent visitors
-      monthlyTotal: 1284,
-      allTimeTotal: 8642
-    };
+    const STORAGE_KEY_VISITORS = 'bmw_g30_visitor_stats_v2';
+    const currentMonth = new Date().toISOString().slice(0, 7); // e.g. "2026-08"
 
     try {
       const saved = localStorage.getItem(STORAGE_KEY_VISITORS);
+      let newStats = {
+        activeNow: 1,
+        monthlyTotal: 1,
+        allTimeTotal: 1,
+        lastMonth: currentMonth
+      };
+
       if (saved) {
         const parsed = JSON.parse(saved);
-        currentStats = {
-          activeNow: Math.floor(Math.random() * 4) + 2,
-          monthlyTotal: parsed.monthlyTotal + 1,
-          allTimeTotal: parsed.allTimeTotal + 1
-        };
-      } else {
-        currentStats = {
-          activeNow: 3,
-          monthlyTotal: 1285,
-          allTimeTotal: 8643
+        const isSameMonth = parsed.lastMonth === currentMonth;
+        const total = (parsed.allTimeTotal || 0) + 1;
+        const monthCount = isSameMonth ? ((parsed.monthlyTotal || 0) + 1) : 1;
+
+        newStats = {
+          activeNow: 1,
+          monthlyTotal: monthCount,
+          allTimeTotal: total,
+          lastMonth: currentMonth
         };
       }
-      localStorage.setItem(STORAGE_KEY_VISITORS, JSON.stringify(currentStats));
-      setStats(currentStats);
+
+      localStorage.setItem(STORAGE_KEY_VISITORS, JSON.stringify(newStats));
+      setStats({
+        activeNow: newStats.activeNow,
+        monthlyTotal: newStats.monthlyTotal,
+        allTimeTotal: newStats.allTimeTotal
+      });
     } catch (e) {
       console.warn(e);
     }
-
-    // Gentle fluctuation for live realism
-    const interval = setInterval(() => {
-      setStats((prev) => ({
-        ...prev,
-        activeNow: Math.max(1, prev.activeNow + (Math.random() > 0.5 ? 1 : -1))
-      }));
-    }, 15000);
-
-    return () => clearInterval(interval);
   }, []);
 
   return (
