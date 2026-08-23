@@ -76,7 +76,7 @@ export const HiddenFeaturesModal: React.FC<HiddenFeaturesModalProps> = ({ isOpen
                       {feat.status}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 font-mono-code mt-0.5 leading-snug">
+                  <p className="text-[11px] text-slate-400 font-mono-code mt-0.5 leading-snug whitespace-pre-line">
                     {feat.note}
                   </p>
                 </div>

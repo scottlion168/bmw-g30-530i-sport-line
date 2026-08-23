@@ -8,34 +8,32 @@ export const ALL_RECORDS: CarRecord[] = [
     km: 39350,
     category: 'maintenance',
     categoryLabel: '🛠️ 保養維修',
-    title: '車輛交車整備與全車烤漆修整',
-    vendor: '進口貿易車商',
+    title: '車輛烤漆與整備修整',
+    vendor: '優質進口車商',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
     totalCost: 0,
-    notes: `♻️ 2021-11-11 ~ 2021-11-16
-車輛烤漆整備修整 (車商交車前協助修整)`
+    notes: '車輛交車前全車漆面細緻修整 (車商交車整備)'
   },
   {
     id: 'rec-586',
     date: '2021-11-15',
     km: 39350,
     category: 'parking',
-    categoryLabel: '🅿️ 停車租賃規費',
-    title: '地下室內停車位月租費',
-    vendor: '市區商業大樓地下停車場',
+    categoryLabel: '🅿️ 停車費用',
+    title: '市區月租室內停車場 (2021-11-15 ~ 2021-12-31)',
+    vendor: '市區月租室內停車場',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
-    contractCost: 3420,
+    contractCost: 0,
+    parkingCost: 3420,
     totalCost: 3420,
-    notes: `🅿️ 月租 室內地下停車場
-租期：2021-11-15 ~ 2021-12-31
-費用計算：1,120 + 2,300 = NT$3,420`
+    notes: '月租 1120 + 2300 = NT$3,420'
   },
   {
     id: 'rec-587',
@@ -43,30 +41,16 @@ export const ALL_RECORDS: CarRecord[] = [
     km: 39396,
     category: 'maintenance',
     categoryLabel: '🛠️ 保養維修',
-    title: '交車整備 (輪胎/煞車/隔熱紙/行車記錄器安裝)',
-    vendor: '進口貿易車商',
+    title: '新胎配置、前煞車來令片、隔熱紙與行車記錄器',
+    vendor: '優質進口車商',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
     totalCost: 0,
-    notes: `♻️ 2021-11-06 (車商協助交車前整備修整)
-
-II. 🛞 輪胎 [BMW LM Wheel V-Spoke 635 🛞19”]
-    1. 前 245/40 R 19 XL
-       🆕 2021-11-16 / 🛣 39396 km
-       🆔 Goodyear F1 SuperSport 100Y XL 
-       📆 42 Week / 2020 year
-
-🛑 煞車：
-    • 來令片 (前)
-
-☀️ 隔熱紙：
-    • FSK 藍鑽 B35E (前擋) / B15 (車身全車)
-
-📹 行車紀錄器：
-    • MiVue™ C515 - Full HD 1080P 大光圈GPS行車記錄器 - Mio. (前)`
+    partNumbers: ['Goodyear F1 SuperSport 245/40 R19 XL 100Y (2020/42週)', 'FSK 藍鑽 B35E/B15', 'MiVue C515 1080P GPS'],
+    notes: '前輪更換 245/40 R19 XL Goodyear F1 SuperSport；前煞車來令片更新；全車 FSK 藍鑽隔熱紙；MiVue C515 行車記錄器'
   },
   {
     id: 'rec-385',
@@ -74,16 +58,15 @@ II. 🛞 輪胎 [BMW LM Wheel V-Spoke 635 🛞19”]
     km: 39396,
     category: 'detailing',
     categoryLabel: '🧼 洗車美容',
-    title: '交車前全車汽車美容深層清潔',
-    vendor: '進口貿易車商',
+    title: '交車全車深層精緻美容',
+    vendor: '優質進口車商配合美容',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
     totalCost: 0,
-    notes: `🧽 2021.11.22 ~ 11.23
-全車汽車美容 (車商交車前協助深層清潔整備)`
+    notes: '2021-11-22 ~ 11-23 汽車美容 (車商交車修整)'
   },
   {
     id: 'rec-588',
@@ -91,29 +74,15 @@ II. 🛞 輪胎 [BMW LM Wheel V-Spoke 635 🛞19”]
     km: 39396,
     category: 'tax_insurance',
     categoryLabel: '🪪 稅務契約規費',
-    title: '和泰產險 - 丙式車體險與各項責任險附約 (綁定1年零件險)',
-    vendor: '和泰產險',
+    title: '第一年度全險 (車體損失險丙式+超額1500萬+零件險)',
+    vendor: '知名產物保險公司',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 44910,
     contractCost: 0,
     totalCost: 44910,
-    notes: `🔰 和泰車險 (車商綁定1年零件險) [丙式]
-• 21 強制責任險：每人體傷20萬 / 每人死亡及失能200萬
-• 05 車體損失保險丙式(E;P)：財產損失保險金 159.3萬 (免自負額 0)
-• C3 車體許可使用免追償：車體損失保險給付 159.3萬 (免自負額 0)
-• 11 汽車竊盜損失保險(E;P)：財產損失保險金 159.3萬 (自負額 10%)
-• 10 竊盜全損免折舊：竊盜保險全損給付 159.3萬 (免自負額 0)
-• 48 駕駛人傷害醫療給付：每人住院/給付每日上限/承保人數總額 2000/90/18萬
-• 49 駕駛人傷害險：每人身故/承保人數總額 300萬/300萬
-• 59 乘客體傷責任險：每人傷害/每事故之總額 300萬/1,200萬
-• 31 第三人責任險-傷害[自用]：每人傷害/每事故之總額 300萬/3,000萬
-• 32 第三人責任險-財損[自用]：每事故之財損 60萬
-• 29 汽車超額責任險保障型責任保險金：1,500萬
-• B3 車體全損免折舊：車體保險全損給付 159.3萬
-• A6 道路救援附加條款-甲型：道路救援費用/拖吊救援公里 3萬/100km
-• 39 刑事訴訟律師費用補償：累積最高賠償金額 20萬`
+    notes: '強制責任險 (200萬)、丙式車體險 (159.3萬免折舊)、竊盜險、駕駛人傷害險300萬、乘客體傷險1200萬、超額責任險1500萬、律師費20萬、道路救援100km'
   },
   {
     id: 'rec-386',
@@ -121,16 +90,15 @@ II. 🛞 輪胎 [BMW LM Wheel V-Spoke 635 🛞19”]
     km: 39398,
     category: 'detailing',
     categoryLabel: '🧼 洗車美容',
-    title: '全車雙層鍍膜含全車玻璃與四輪鋁圈 (兩年期)',
-    vendor: '專業車體工藝美研',
+    title: '全車雙層結晶鍍膜含玻璃鋁圈 (兩年期)',
+    vendor: '專業車體工藝塗裝門市',
     fuelCost: 0,
     detailingCost: 22000,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
     totalCost: 22000,
-    notes: `✨ 2021/11/23 ~ 11/26
-施作項目：全車鍍膜含玻璃鋁圈 (兩年期保固)`
+    notes: '全車雙層結晶鍍膜、玻璃撥水鍍膜、鋁圈耐高溫防護'
   },
   {
     id: 'rec-589',
@@ -138,145 +106,106 @@ II. 🛞 輪胎 [BMW LM Wheel V-Spoke 635 🛞19”]
     km: 39398,
     category: 'maintenance',
     categoryLabel: '🛠️ 保養維修',
-    title: '外廠定期小保養 (機油、正廠機油濾芯更換)',
-    vendor: '專業車體工藝美研保修',
+    title: '入主首發小保養 (5W30 機油 5L + 正廠機油芯)',
+    vendor: '專業車體工藝外廠',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 4800,
     taxCost: 0,
     contractCost: 0,
     totalCost: 4800,
-    notes: `*️⃣ 2021-11-23 ~ 2021-11-26 外廠保養
-🛢️ 機油：5W30H * 5 罐
-🔩 機油芯：正廠零件更換`
+    partNumbers: ['5W30H *5', 'BMW 正廠機油芯'],
+    notes: '更換 5W30 機油 5 瓶 + BMW 正廠機油芯'
   },
   {
-    id: 'rec-001',
+    id: 'rec-1',
     date: '2021-11-28',
     km: 39917,
     category: 'fuel',
     categoryLabel: '⛽ 油資紀錄',
-    title: '加油紀錄 - 台灣中油',
-    vendor: '台灣中油直營門市',
+    title: '中油 98 無鉛汽油加滿',
+    vendor: '中油直營門市',
     fuelCost: 1547,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
-    totalCost: 1547,
-    notes: `⛽ 台灣中油 (市區直營站) 加油紀錄`
+    totalCost: 1547
   },
   {
-    id: 'rec-002',
+    id: 'rec-2',
     date: '2021-12-03',
     km: 40272,
     category: 'fuel',
     categoryLabel: '⛽ 油資紀錄',
-    title: '加油紀錄 - 台灣中油',
-    vendor: '台灣中油直營門市',
+    title: '中油 98 無鉛汽油加油',
+    vendor: '中油直營門市',
     fuelCost: 1132,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
-    totalCost: 1132,
-    notes: `⛽ 台灣中油 (市區直營站) 加油紀錄`
+    totalCost: 1132
   },
   {
     id: 'rec-387',
     date: '2021-12-04',
-    km: null,
+    km: 40500,
     category: 'detailing',
     categoryLabel: '🧼 洗車美容',
-    title: '自助洗車與全車外觀沖洗',
-    vendor: '中油加油站自助洗車場',
+    title: '自助精緻洗車護理',
+    vendor: '中油直營門市自助洗車區',
     fuelCost: 0,
     detailingCost: 150,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
-    totalCost: 150,
-    notes: `🧽 自助洗車 (中油直營洗車專區)`
+    totalCost: 150
   },
   {
-    id: 'rec-003',
+    id: 'rec-3',
     date: '2021-12-11',
     km: 40932,
     category: 'fuel',
     categoryLabel: '⛽ 油資紀錄',
-    title: '加油紀錄 - 台灣中油',
-    vendor: '台灣中油直營門市',
+    title: '中油 98 無鉛汽油加油',
+    vendor: '中油直營門市',
     fuelCost: 1720,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
-    totalCost: 1720,
-    notes: `⛽ 台灣中油 (市區直營站) 加油紀錄`
+    totalCost: 1720
   },
   {
-    id: 'rec-388',
-    date: '2021-12-11',
-    km: null,
-    category: 'detailing',
-    categoryLabel: '🧼 洗車美容',
-    title: '自助洗車與高壓泡沫清潔',
-    vendor: '中油加油站自助洗車場',
-    fuelCost: 0,
-    detailingCost: 150,
-    maintenanceCost: 0,
-    taxCost: 0,
-    contractCost: 0,
-    totalCost: 150,
-    notes: `🧽 自助洗車 (中油直營洗車專區)`
-  },
-  {
-    id: 'rec-004',
+    id: 'rec-4',
     date: '2021-12-18',
     km: 41421,
     category: 'fuel',
     categoryLabel: '⛽ 油資紀錄',
-    title: '加油紀錄 - 台灣中油',
-    vendor: '台灣中油直營門市',
+    title: '中油 98 無鉛汽油加油',
+    vendor: '中油直營門市',
     fuelCost: 1709,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 0,
-    totalCost: 1709,
-    notes: `⛽ 台灣中油 (市區直營站) 加油紀錄`
-  },
-  {
-    id: 'rec-389',
-    date: '2021-12-25',
-    km: 41514,
-    category: 'detailing',
-    categoryLabel: '🧼 洗車美容',
-    title: '自助洗車與全車沖洗打蠟',
-    vendor: '中油加油站自助洗車場',
-    fuelCost: 0,
-    detailingCost: 120,
-    maintenanceCost: 0,
-    taxCost: 0,
-    contractCost: 0,
-    totalCost: 120,
-    notes: `🧽 自助洗車 (中油直營洗車專區)`
+    totalCost: 1709
   },
   {
     id: 'rec-590',
     date: '2021-12-28',
     km: 41528,
-    category: 'parking',
-    categoryLabel: '🅿️ 停車租賃規費',
-    title: '地下室內停車位月租費 (2022年1月份)',
-    vendor: '市區商業大樓地下停車場',
+    category: 'tax_insurance',
+    categoryLabel: '🪪 稅務契約規費',
+    title: '市區月租室內停車場 (2022年1月份租金)',
+    vendor: '市區月租室內停車場',
     fuelCost: 0,
     detailingCost: 0,
     maintenanceCost: 0,
     taxCost: 0,
     contractCost: 2315,
-    totalCost: 2315,
-    notes: `🅿️ 月租 室內地下停車場 (2022年1月份月租費用)`
+    totalCost: 2315
   },
   // 2022 Records
   {

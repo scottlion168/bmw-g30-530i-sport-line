@@ -427,7 +427,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
                                 <div className="text-xs font-semibold text-slate-400 font-mono-code mb-1">
                                   📋 施工細節與保養備註：
                                 </div>
-                                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
+                                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans whitespace-pre-line">
                                   {rec.notes}
                                 </p>
                               </div>

@@ -319,6 +319,11 @@ export const BatchImportModal: React.FC<BatchImportModalProps> = ({
                         )}
                       </div>
                       <div className="text-slate-100 font-semibold">{item.record.title}</div>
+                      {item.record.notes && (
+                        <div className="text-[11px] text-slate-300 font-sans whitespace-pre-line mt-0.5">
+                          {item.record.notes}
+                        </div>
+                      )}
                       {item.isDuplicate && (
                         <div className="text-[11px] text-amber-400/90 font-mono-code">
                           {item.duplicateReason}

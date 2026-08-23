@@ -178,7 +178,7 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
               {activeMilestone.title}
             </h3>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans whitespace-pre-line">
               {activeMilestone.description}
             </p>
 
@@ -189,7 +189,7 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
                   <AlertTriangle className="w-3.5 h-3.5" />
                   通病徵兆 / 故障情境：
                 </div>
-                <div className="text-xs text-slate-300">{activeMilestone.symptoms}</div>
+                <div className="text-xs text-slate-300 whitespace-pre-line font-sans">{activeMilestone.symptoms}</div>
               </div>
 
               <div className="bg-slate-950/70 rounded-xl p-3 border border-slate-800/80">
@@ -197,9 +197,21 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
                   <Wrench className="w-3.5 h-3.5" />
                   預防升級 / 根治方案：
                 </div>
-                <div className="text-xs text-slate-300">{activeMilestone.solution}</div>
+                <div className="text-xs text-slate-300 whitespace-pre-line font-sans">{activeMilestone.solution}</div>
               </div>
             </div>
+
+            {/* Matched Record Notes */}
+            {activeMilestone.matchedRecord?.notes && (
+              <div className="bg-slate-950/70 rounded-xl p-3 border border-blue-900/40">
+                <div className="text-xs font-bold text-blue-400 font-mono flex items-center gap-1.5 mb-1">
+                  📋 實際施工備註：
+                </div>
+                <div className="text-xs text-slate-200 whitespace-pre-line font-sans leading-relaxed">
+                  {activeMilestone.matchedRecord.notes}
+                </div>
+              </div>
+            )}
 
             {/* Tags & Action Button */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">

@@ -64,11 +64,11 @@ export const OBDModal: React.FC<OBDModalProps> = ({ isOpen, onClose, onSelectCod
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono-code">
-                  <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-slate-300">
+                  <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-slate-300 whitespace-pre-line">
                     <span className="text-slate-400 block text-[11px] font-bold">觸發徵兆與狀況：</span>
                     {item.symptom}
                   </div>
-                  <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-slate-300">
+                  <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-slate-300 whitespace-pre-line">
                     <span className="text-emerald-400 block text-[11px] font-bold">實車處置方案與料號：</span>
                     {item.solution}
                   </div>
