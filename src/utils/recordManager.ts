@@ -21,13 +21,16 @@ export function generateRecordSignature(r: { date: string; km: number | null | s
 export function detectCategory(catStr: string, titleStr: string): { category: CarRecord['category']; label: string } {
   const combined = (catStr + ' ' + titleStr).toLowerCase();
   
+  if (combined.includes('停車') || combined.includes('車位') || combined.includes('停車場') || combined.includes('泊車') || combined.includes('parking') || combined.includes('嘟嘟房') || combined.includes('俥亭') || combined.includes('台灣聯通') || combined.includes('便利停車')) {
+    return { category: 'parking', label: '🅿️ 停車費用' };
+  }
   if (combined.includes('油資') || combined.includes('98') || combined.includes('加油') || combined.includes('中油') || combined.includes('fuel')) {
     return { category: 'fuel', label: '⛽ 油資紀錄' };
   }
   if (combined.includes('洗車') || combined.includes('美容') || combined.includes('鍍膜') || combined.includes('除瀝青') || combined.includes('detailing')) {
     return { category: 'detailing', label: '🧼 洗車美容' };
   }
-  if (combined.includes('稅') || combined.includes('保險') || combined.includes('停車') || combined.includes('規費') || combined.includes('過戶') || combined.includes('驗車') || combined.includes('罰單') || combined.includes('月租')) {
+  if (combined.includes('稅') || combined.includes('保險') || combined.includes('規費') || combined.includes('過戶') || combined.includes('驗車') || combined.includes('罰單') || combined.includes('月租')) {
     return { category: 'tax_insurance', label: '🪪 稅務與規費' };
   }
   if (combined.includes('故障') || combined.includes('異常') || combined.includes('拖吊') || combined.includes('破裂') || combined.includes('警告') || combined.includes('漏水') || combined.includes('卡住') || combined.includes('fault')) {
@@ -239,6 +242,7 @@ export function parseCSVText(rawText: string, currentRecords: CarRecord[]): Impo
       detailingCost: catObj.category === 'detailing' ? cost : 0,
       maintenanceCost: (catObj.category === 'maintenance' || catObj.category === 'fault') ? cost : 0,
       taxCost: catObj.category === 'tax_insurance' ? cost : 0,
+      parkingCost: catObj.category === 'parking' ? cost : 0,
       contractCost: 0,
       totalCost: cost,
       notes: notes || undefined,

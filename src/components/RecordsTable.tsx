@@ -19,7 +19,8 @@ import {
   Download,
   ShieldCheck,
   CheckCircle2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  SquareParking
 } from 'lucide-react';
 
 interface RecordsTableProps {
@@ -51,6 +52,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
     { key: 'all', label: '全部項目', icon: SlidersHorizontal },
     { key: 'maintenance', label: '🛠️ 保養維修', icon: Wrench },
     { key: 'fuel', label: '⛽ 油資紀錄', icon: Fuel },
+    { key: 'parking', label: '🅿️ 停車費用', icon: SquareParking },
     { key: 'tax_insurance', label: '🪪 稅務與規費', icon: FileText },
     { key: 'detailing', label: '🧼 洗車美容', icon: Sparkles },
     { key: 'fault', label: '⚠️ 故障/異常', icon: AlertOctagon },
@@ -115,6 +117,8 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">🛠️ 保養維修</span>;
       case 'fuel':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">⛽ 燃油加油</span>;
+      case 'parking':
+        return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">🅿️ 停車費用</span>;
       case 'tax_insurance':
         return <span className="px-2 py-0.5 text-[11px] rounded font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">🪪 稅務規費</span>;
       case 'detailing':

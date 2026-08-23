@@ -44,10 +44,12 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         yearlyLabels: [],
         maintenanceData: [],
         fuelData: [],
+        parkingData: [],
         taxData: [],
         detailingData: [],
         totalMaintenance: 0,
         totalFuel: 0,
+        totalParking: 0,
         totalDetailing: 0,
         totalCost: 0,
         efficiencyYears: [],
@@ -61,6 +63,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       [year: string]: {
         maintenance: number;
         fuel: number;
+        parking: number;
         tax: number;
         detailing: number;
         minKm: number;
@@ -70,13 +73,14 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
 
     let totalMaintenance = 0;
     let totalFuel = 0;
+    let totalParking = 0;
     let totalDetailing = 0;
     let totalCost = 0;
 
     records.forEach((r) => {
       const year = (r.date || '').substring(0, 4) || '未知年份';
       if (!yearMap[year]) {
-        yearMap[year] = { maintenance: 0, fuel: 0, tax: 0, detailing: 0, minKm: Infinity, maxKm: 0 };
+        yearMap[year] = { maintenance: 0, fuel: 0, parking: 0, tax: 0, detailing: 0, minKm: Infinity, maxKm: 0 };
       }
 
       totalCost += r.totalCost;
@@ -92,6 +96,9 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       } else if (r.category === 'fuel') {
         yearMap[year].fuel += r.totalCost;
         totalFuel += r.totalCost;
+      } else if (r.category === 'parking') {
+        yearMap[year].parking += r.totalCost;
+        totalParking += r.totalCost;
       } else if (r.category === 'tax_insurance') {
         yearMap[year].tax += r.totalCost;
         totalMaintenance += r.totalCost;
@@ -108,6 +115,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
     const yearlyLabels = sortedYears.map((y) => `${y}年`);
     const maintenanceData = sortedYears.map((y) => yearMap[y].maintenance);
     const fuelData = sortedYears.map((y) => yearMap[y].fuel);
+    const parkingData = sortedYears.map((y) => yearMap[y].parking);
     const taxData = sortedYears.map((y) => yearMap[y].tax);
     const detailingData = sortedYears.map((y) => yearMap[y].detailing);
 
@@ -133,10 +141,12 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
       yearlyLabels,
       maintenanceData,
       fuelData,
+      parkingData,
       taxData,
       detailingData,
       totalMaintenance,
       totalFuel,
+      totalParking,
       totalDetailing,
       totalCost,
       efficiencyYears,
@@ -163,6 +173,15 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
         data: dynamicStats.fuelData,
         backgroundColor: 'rgba(6, 182, 212, 0.85)',
         borderColor: 'rgb(6, 182, 212)',
+        borderWidth: 1,
+        borderRadius: 4,
+        stack: 'Stack 0'
+      },
+      {
+        label: '🅿️ 停車與場租費用',
+        data: dynamicStats.parkingData,
+        backgroundColor: 'rgba(99, 102, 241, 0.85)',
+        borderColor: 'rgb(99, 102, 241)',
         borderWidth: 1,
         borderRadius: 4,
         stack: 'Stack 0'
@@ -239,20 +258,22 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
 
   // Chart 2: Cumulative Expense Distribution Doughnut
   const doughnutData = {
-    labels: ['保養維修與零件', '中油 98 油資', '洗車鍍膜美容'],
+    labels: ['保養維修與零件', '中油 98 油資', '停車租賃費用', '洗車鍍膜美容'],
     datasets: [
       {
         data: [
           dynamicStats.totalMaintenance,
           dynamicStats.totalFuel,
+          dynamicStats.totalParking,
           dynamicStats.totalDetailing
         ],
         backgroundColor: [
           'rgba(59, 130, 246, 0.9)',
           'rgba(6, 182, 212, 0.9)',
+          'rgba(99, 102, 241, 0.9)',
           'rgba(168, 85, 247, 0.9)'
         ],
-        borderColor: ['#1e293b', '#1e293b', '#1e293b'],
+        borderColor: ['#1e293b', '#1e293b', '#1e293b', '#1e293b'],
         borderWidth: 2,
         hoverOffset: 6
       }
@@ -378,6 +399,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
   const safeTotal = Math.max(dynamicStats.totalCost, 1);
   const maintPct = hasRecords ? ((dynamicStats.totalMaintenance / safeTotal) * 100).toFixed(1) : '0.0';
   const fuelPct = hasRecords ? ((dynamicStats.totalFuel / safeTotal) * 100).toFixed(1) : '0.0';
+  const parkingPct = hasRecords ? ((dynamicStats.totalParking / safeTotal) * 100).toFixed(1) : '0.0';
   const detailPct = hasRecords ? ((dynamicStats.totalDetailing / safeTotal) * 100).toFixed(1) : '0.0';
 
   if (!hasRecords) {
@@ -391,7 +413,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
             歷年養車支出趨勢圖
           </h3>
           <p className="text-xs text-slate-400 font-mono-code max-w-md mt-1">
-            目前靜態資料庫尚無紀錄。於 recordsData.ts 加入工單後，系統將自動按年份彙整「保養維修、燃油油資、稅務規費、洗車美容」並繪製成堆疊柱狀圖。
+            目前靜態資料庫尚無紀錄。於 recordsData.ts 加入工單後，系統將自動按年份彙整「保養維修、燃油油資、停車費用、稅務規費、洗車美容」並繪製成堆疊柱狀圖。
           </p>
         </div>
 
@@ -403,7 +425,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
             累積花費佔比分佈（待計算）
           </h3>
           <p className="text-xs text-slate-400 font-mono-code max-w-xs mt-1">
-            匯入工單後，系統將自動統計保修、油資與美容的百分比圓餅圖。
+            匯入工單後，系統將自動統計保修、油資、停車與美容的百分比圓餅圖。
           </p>
           <div className="text-sm font-tech font-bold text-slate-500 mt-4">
             目前總累計：NT$ 0 元
@@ -427,7 +449,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
                 {activeTab === 'yearly' ? '歷年養車支出趨勢結構 (自動即時彙整)' : '年度油耗效能 (km/L) 與行駛里程對比'}
               </h2>
               <p className="text-xs text-slate-400 font-mono-code">
-                {activeTab === 'yearly' ? '分項統計：維修保養 / 油資 / 規費稅務 / 美容' : 'B46/B48 節能曲線：根據您匯入之油資與里程動態計算'}
+                {activeTab === 'yearly' ? '分項統計：維修保養 / 油資 / 停車租賃 / 規費稅務 / 美容' : 'B46/B48 節能曲線：根據您匯入之油資與里程動態計算'}
               </p>
             </div>
           </div>
@@ -473,7 +495,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-100 font-tech">累積花費佔比分佈 (動態同步)</h2>
-            <p className="text-xs text-slate-400 font-mono-code">全週期三大主力花費組成</p>
+            <p className="text-xs text-slate-400 font-mono-code">全週期四大主力花費組成</p>
           </div>
         </div>
 
@@ -487,7 +509,7 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono-code pt-3 border-t border-slate-800">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono-code pt-3 border-t border-slate-800">
           <div className="bg-blue-950/40 border border-blue-900/50 p-2 rounded-xl">
             <div className="text-blue-400 font-bold">{maintPct}%</div>
             <div className="text-[10px] text-slate-400">保修零件</div>
@@ -495,6 +517,10 @@ export const Charts: React.FC<ChartsProps> = ({ records = [] }) => {
           <div className="bg-cyan-950/40 border border-cyan-900/50 p-2 rounded-xl">
             <div className="text-cyan-400 font-bold">{fuelPct}%</div>
             <div className="text-[10px] text-slate-400">汽油燃油</div>
+          </div>
+          <div className="bg-indigo-950/40 border border-indigo-900/50 p-2 rounded-xl">
+            <div className="text-indigo-400 font-bold">{parkingPct}%</div>
+            <div className="text-[10px] text-slate-400">停車場租</div>
           </div>
           <div className="bg-purple-950/40 border border-purple-900/50 p-2 rounded-xl">
             <div className="text-purple-400 font-bold">{detailPct}%</div>

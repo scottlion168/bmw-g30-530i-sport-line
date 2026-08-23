@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, Gauge, Fuel, Wrench, Sparkles, TrendingUp, Calendar, ArrowUpRight, AlertCircle, Database } from 'lucide-react';
+import { DollarSign, Gauge, Fuel, Wrench, Sparkles, TrendingUp, Calendar, ArrowUpRight, AlertCircle, Database, SquareParking } from 'lucide-react';
 import { CarRecord } from '../types';
 
 interface KPICardsProps {
@@ -13,6 +13,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
   let totalCost = 0;
   let totalMaintenanceCost = 0;
   let totalFuelCost = 0;
+  let totalParkingCost = 0;
   let totalDetailingCost = 0;
   let currentKm = 0;
   let startKm = 0;
@@ -28,6 +29,10 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
 
     totalFuelCost = records
       .filter((r) => r.category === 'fuel')
+      .reduce((sum, r) => sum + r.totalCost, 0);
+
+    totalParkingCost = records
+      .filter((r) => r.category === 'parking')
       .reduce((sum, r) => sum + r.totalCost, 0);
 
     totalDetailingCost = records
@@ -63,6 +68,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
   const safeTotal = Math.max(totalCost, 1);
   const maintenancePct = hasRecords ? ((totalMaintenanceCost / safeTotal) * 100).toFixed(1) : '0.0';
   const fuelPct = hasRecords ? ((totalFuelCost / safeTotal) * 100).toFixed(1) : '0.0';
+  const parkingPct = hasRecords ? ((totalParkingCost / safeTotal) * 100).toFixed(1) : '0.0';
   const detailingPct = hasRecords ? ((totalDetailingCost / safeTotal) * 100).toFixed(1) : '0.0';
 
   return (
@@ -140,7 +146,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
             </div>
             <div className="mt-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2 font-mono-code">
               <span>累計行駛 {drivenKm > 0 ? drivenKm.toLocaleString() : 0} km</span>
-              <span className="text-purple-400">油+保+稅+美</span>
+              <span className="text-purple-400">油+保+稅+停+美</span>
             </div>
           </div>
         </div>
@@ -171,7 +177,7 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
       </div>
 
       {/* Secondary Cost Breakdown Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Sub-Card 1: Maintenance */}
         <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -210,7 +216,26 @@ export const KPICards: React.FC<KPICardsProps> = ({ records = [] }) => {
           </div>
         </div>
 
-        {/* Sub-Card 3: Detailing */}
+        {/* Sub-Card 3: Parking */}
+        <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <SquareParking className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs text-slate-400 font-mono-code">停車租賃與場規費</div>
+              <div className="text-lg font-tech font-bold text-slate-100">
+                NT$ {totalParkingCost.toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs font-bold text-indigo-400 font-mono">{parkingPct}%</div>
+            <div className="text-[10px] text-slate-400 font-mono">佔總支出</div>
+          </div>
+        </div>
+
+        {/* Sub-Card 4: Detailing */}
         <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">

@@ -71,6 +71,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
           vendor: recordToEdit.vendor || '',
           maintenanceCost: recordToEdit.maintenanceCost || 0,
           fuelCost: recordToEdit.fuelCost || 0,
+          parkingCost: recordToEdit.parkingCost || 0,
           detailingCost: recordToEdit.detailingCost || 0,
           taxCost: recordToEdit.taxCost || 0,
           contractCost: recordToEdit.contractCost || 0,
@@ -90,6 +91,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
           vendor: '配合專業保修廠',
           maintenanceCost: 0,
           fuelCost: 0,
+          parkingCost: 0,
           detailingCost: 0,
           taxCost: 0,
           contractCost: 0,
@@ -125,15 +127,16 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
   }, [formData.date, formData.km, formData.title, formData.id, existingRecords, isOpen]);
 
   // Auto calculate total cost unless user manually enters a custom sum
-  const handleCostChange = (field: 'maintenanceCost' | 'fuelCost' | 'detailingCost' | 'taxCost' | 'contractCost', val: number) => {
+  const handleCostChange = (field: 'maintenanceCost' | 'fuelCost' | 'parkingCost' | 'detailingCost' | 'taxCost' | 'contractCost', val: number) => {
     const updated = { ...formData, [field]: val };
     if (!isManualTotal) {
       updated.totalCost =
-        (field === 'maintenanceCost' ? val : formData.maintenanceCost) +
-        (field === 'fuelCost' ? val : formData.fuelCost) +
-        (field === 'detailingCost' ? val : formData.detailingCost) +
-        (field === 'taxCost' ? val : formData.taxCost) +
-        (field === 'contractCost' ? val : formData.contractCost);
+        (field === 'maintenanceCost' ? val : (formData.maintenanceCost || 0)) +
+        (field === 'fuelCost' ? val : (formData.fuelCost || 0)) +
+        (field === 'parkingCost' ? val : (formData.parkingCost || 0)) +
+        (field === 'detailingCost' ? val : (formData.detailingCost || 0)) +
+        (field === 'taxCost' ? val : (formData.taxCost || 0)) +
+        (field === 'contractCost' ? val : (formData.contractCost || 0));
     }
     setFormData(updated);
   };
@@ -173,10 +176,12 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
     let vendorDefault = formData.vendor;
     if (cat === 'fuel' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
       vendorDefault = '台灣中油直營門市';
+    } else if (cat === 'parking' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
+      vendorDefault = '市區室內月租/臨停停車場';
     } else if (cat === 'detailing' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
       vendorDefault = '專業汽車精緻美容';
     } else if (cat === 'tax_insurance' && (!vendorDefault || vendorDefault.includes('保修廠'))) {
-      vendorDefault = '監理所 / 產險公會 / 市區停車場';
+      vendorDefault = '監理所 / 產險公會 / 國道通行費';
     }
     setFormData({ ...formData, category: cat, vendor: vendorDefault });
   };
@@ -191,6 +196,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
     const categoryLabels: Record<CarRecord['category'], string> = {
       maintenance: '🛠️ 保養維修',
       fuel: '⛽ 油資紀錄',
+      parking: '🅿️ 停車費用',
       tax_insurance: '🪪 稅務與規費',
       detailing: '🧼 洗車美容',
       fault: '⚠️ 故障/異常',
@@ -207,6 +213,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
       vendor: formData.vendor.trim() || '配合專業保修廠',
       maintenanceCost: Number(formData.maintenanceCost) || 0,
       fuelCost: Number(formData.fuelCost) || 0,
+      parkingCost: Number(formData.parkingCost) || 0,
       detailingCost: Number(formData.detailingCost) || 0,
       taxCost: Number(formData.taxCost) || 0,
       contractCost: Number(formData.contractCost) || 0,
@@ -300,7 +307,8 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
               >
                 <option value="maintenance">🛠️ 保養維修 (Maintenance)</option>
                 <option value="fuel">⛽ 油資紀錄 (Fuel)</option>
-                <option value="tax_insurance">🪪 稅務與規費 (Tax/Toll/Parking)</option>
+                <option value="parking">🅿️ 停車費用 (Parking)</option>
+                <option value="tax_insurance">🪪 稅務與規費 (Tax/Insurance/Toll)</option>
                 <option value="detailing">🧼 洗車美容 (Detailing)</option>
                 <option value="fault">⚠️ 故障/異常 (Fault Issue)</option>
                 <option value="tuning_obd">⚙️ 改裝/OBD (Tuning/Coding)</option>
@@ -351,7 +359,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
               </label>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
               <div>
                 <span className="text-[11px] font-mono text-slate-400 block mb-0.5">維修/零件費用</span>
                 <input
@@ -371,6 +379,18 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
                   min="0"
                   value={formData.fuelCost || ''}
                   onChange={(e) => handleCostChange('fuelCost', Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono"
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-mono text-slate-400 block mb-0.5">🅿️ 停車/車位費</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.parkingCost || ''}
+                  onChange={(e) => handleCostChange('parkingCost', Number(e.target.value))}
                   placeholder="0"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono"
                 />
