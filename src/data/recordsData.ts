@@ -6085,5 +6085,25 @@ export const ALL_RECORDS: CarRecord[] = [
     tuningCost: 0,
     totalCost: 11430,
     notes: '*️⃣ 施工日期：2026-08-21\n🛠️ 外廠九萬公里大保養與後煞車系統更新\n\n6️⃣ 🚗 引擎 [B46B20O0 - SULEV]\n  💠 機油：\n     ⚠️ [標準填充量：5.25 公升 (5 L + 換機油芯 0.5 L)]\n     🆕 2026-08-21 / 🛣 89,745 km\n     🆔 Castrol EDGE 5W30M: 🔄 5.5 L\n  💠 機油芯：\n     🆕 2026-08-21 / 🛣 89,745 km\n     🆔 BMW Engine Oil Filter Element [11428575211] (BMW 引擎機油濾清器濾芯): 🔄 1\n\n  💠 煞車系統：\n     ⚠️ [後輪來令片組 + 磨損感應線]\n     🆕 2026-08-21 / 🛣 89,745 km\n     🆔 BMW Brake Pad Set - Textar [2456101] (BMW 後煞車片套裝): 🔄 2 組\n     🆔 Wear Indicator - BMW [34356890791] (BMW 後煞車片磨損感應傳感器): 🔄 1 條\n     🆔 Bendix DOT4 ESP 煞車油: 🔄 1 組\n     🧹🆔 Wurth 煞車盤清潔劑 Brake Cleaner: (當次未額外計費)\n\n  🛞 輪胎對調：\n     • 前輪左右交叉對調\n     • 後輪左右交叉對調\n\n💰 工資明細：\n• 保養工資 + 電腦全車診斷：NT$1,000\n• 後煞車系統更換工資 (含行車電腦後煞車分泵電子釋放/制動)：NT$1,500\n• 總計：NT$11,430'
+  },
+  {
+    id: 'rec-758',
+    date: '2026-08-22',
+    km: 89746,
+    category: 'maintenance',
+    categoryLabel: '🛠️ 保養維修',
+    title: '引擎散熱水路與機油芯座預防性大修 (水泵浦/機油冷卻器座/平衡軸蓋/全車水管/水箱精)',
+    vendor: '專業輪胎保修廠',
+    fuelCost: 0,
+    detailingCost: 0,
+    maintenanceCost: 43300,
+    taxCost: 0,
+    contractCost: 0,
+    tollCost: 0,
+    fineCost: 0,
+    telecomCost: 0,
+    tuningCost: 0,
+    totalCost: 43300,
+    notes: '♻️ 施工期間：2026-08-22 ~ 2026-08-24\n🛠️ 引擎水路與冷卻循環系統全方位大修複修\n\n6️⃣ 🚗 引擎 [B46B20O0 - SULEV]\n  💠 平衡軸密封蓋：\n     ⚠️ [2026-08-24 / 🛣 89,746 km : 維修單註明台灣副廠零件]\n     🆕 2026-08-24 / 🛣 89,746 km\n     🆔 Engine Block Cover [11117797932] (BMW 平衡軸密封蓋): 🔄 1 組\n\n  💠 機油芯底座總成：\n     🆕 2026-08-24 / 🛣 89,746 km\n     🆔 Oil Cooler Filter Housing for BMW [11428596283] (BMW G30 機油冷卻器濾清器殼體總成): 🔄 1 組\n\n  💠 水路冷卻系統循環：\n     • [節溫器總成] ⚠️ 經技師檢視：熱管理模塊外觀正常無風化現象，保留原件。\n     • [冷卻水泵浦]\n       🆕 2026-08-24 / 🛣 89,746 km\n       🆔 Coolant Water Pump Assembly [11517644809] (BMW G30 冷卻液泵浦總成): 🔄 1 組\n     • [冷卻水管路]\n       🆕 2026-08-24 / 🛣 89,746 km\n       🆔 NEW BMW 5 G30 COOLANT HOSE [64219317614] (BMW G30 冷卻液軟管-熱水管): 🔄 1 條\n       🆕 2026-08-24 / 🛣 89,746 km\n       🆔 Coolant Radiator Coolant Hose For BMW [17128602870] (BMW 冷卻液軟管-上水管): 🔄 1 條\n     • [水管接頭/法蘭]\n       🆕 2026-08-24 / 🛣 89,746 km\n       🆔 Coolant Pipe Flange For BMW [11118511205] (BMW 冷卻液管法蘭): 🔄 1 個\n     • [長效水箱冷卻液]\n       ⚠️ [水箱精標準填充量 (藍色50%)：9.9 公升]\n       🆕 2026-08-24 / 🛣 89,746 km\n       🆔 WURTH Radiator Long-Life Coolant 長效水箱精: 🔄 8 瓶\n\n  💠 引擎積碳與進氣清潔：\n     🆕 2026-08-24 / 🛣 89,746 km\n     🧹 節氣門拆洗深層清潔\n     🧹 燃燒室積碳清潔 (⚠️ 當次未施作 None Work)\n\n💰 工資費用明細：\n• 引擎水路全拆裝工資 + 全車電腦深度診斷：NT$8,000\n• 總計：NT$43,300'
   }
 ];
