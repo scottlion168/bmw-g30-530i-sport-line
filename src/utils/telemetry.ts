@@ -124,18 +124,27 @@ export async function syncCloudVisitorCounts(): Promise<{ allTime: number; month
 }
 
 /**
- * Real-time cross-device presence engine using standard browser WebSockets + BroadcastChannel
- * Pure web standards, zero third-party Node.js dependencies (100% compatible with GitHub Actions / Vite / Cloudflare / Vercel)
+ * Real-time cross-device presence engine
+ * Combines 3 independent real-time sync channels:
+ * 1. Server-Sent Events (SSE) Global Pub/Sub via ntfy.sh (Cross-IP/Cross-Device real-time push with zero CORS issues)
+ * 2. Fallback WebSockets (PieSocket real-time channel)
+ * 3. Local BroadcastChannel (Same-device multi-tab synchronization)
  */
+const PRESENCE_SSE_TOPIC = 'bmw_g30_530i_garage_presence_v2';
+const PRESENCE_SSE_URL = `https://ntfy.sh/${PRESENCE_SSE_TOPIC}/sse`;
+const PRESENCE_POST_URL = `https://ntfy.sh/${PRESENCE_SSE_TOPIC}`;
+
 export function initRealtimePresence(onCountChange: (count: number) => void): () => void {
-  const clientId = `client_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
+  // Unique client ID for this device session
+  const clientId = `dev_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
   const activePeers = new Map<string, number>();
   activePeers.set(clientId, Date.now());
 
   const updateCount = () => {
     const now = Date.now();
+    // Inactive timeout: 25 seconds
     for (const [id, lastSeen] of activePeers.entries()) {
-      if (now - lastSeen > 30000) {
+      if (now - lastSeen > 25000) {
         activePeers.delete(id);
       }
     }
@@ -145,108 +154,212 @@ export function initRealtimePresence(onCountChange: (count: number) => void): ()
     onCountChange(activePeers.size);
   };
 
-  // 1. Native WebSocket Connection to public presence echo relay (PieSocket / SocketsBay public channel)
-  let ws: WebSocket | null = null;
-  let wsHeartbeat: any = null;
+  // Helper to safely broadcast presence ping over HTTP/SSE and WebSockets
+  const broadcastHeartbeat = (type: 'ONLINE' | 'PING' | 'OFFLINE') => {
+    const payload = JSON.stringify({ id: clientId, type, ts: Date.now() });
 
+    // 1. Post to ntfy global pub-sub stream
+    try {
+      fetch(PRESENCE_POST_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        mode: 'cors',
+        keepalive: type === 'OFFLINE'
+      }).catch(() => {});
+    } catch {}
+
+    // 2. Post to local BroadcastChannel
+    try {
+      localChannel?.postMessage({ id: clientId, type, ts: Date.now() });
+    } catch {}
+
+    // 3. Post to WebSocket if open
+    try {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(payload);
+      }
+    } catch {}
+  };
+
+  // ==========================================
+  // CHANNEL 1: Server-Sent Events (SSE) Stream
+  // ==========================================
+  let eventSource: EventSource | null = null;
   try {
-    // SocketsBay / PieSocket public presence stream
-    ws = new WebSocket('wss://socketsbay.com/wss/v2/1/demo/');
+    if (typeof EventSource !== 'undefined') {
+      eventSource = new EventSource(PRESENCE_SSE_URL);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          // ntfy wraps the payload in parsed.message or sends as raw
+          let payload: any = null;
+          if (parsed && typeof parsed.message === 'string') {
+            try {
+              payload = JSON.parse(parsed.message);
+            } catch {
+              payload = parsed;
+            }
+          } else {
+            payload = parsed;
+          }
+
+          if (payload && payload.id && payload.id !== clientId) {
+            if (payload.type === 'ONLINE' || payload.type === 'PING') {
+              activePeers.set(payload.id, Date.now());
+              // If another device just came online, greet them back with our presence
+              if (payload.type === 'ONLINE') {
+                broadcastHeartbeat('PING');
+              }
+              updateCount();
+            } else if (payload.type === 'OFFLINE') {
+              activePeers.delete(payload.id);
+              updateCount();
+            }
+          }
+        } catch {
+          // ignore non-json notifications
+        }
+      };
+
+      eventSource.onerror = () => {
+        // SSE handles auto-reconnect natively
+      };
+    }
+  } catch (e) {
+    console.warn('SSE connection notice:', e);
+  }
+
+  // ==========================================
+  // CHANNEL 2: PieSocket WebSocket Relay
+  // ==========================================
+  let ws: WebSocket | null = null;
+  try {
+    ws = new WebSocket('wss://free.blr2.piesocket.com/v3/bmw_g30_530i_presence_channel?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=0');
 
     ws.onopen = () => {
-      ws?.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'ONLINE', id: clientId, ts: Date.now() }));
-      
-      wsHeartbeat = setInterval(() => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          activePeers.set(clientId, Date.now());
-          ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'PING', id: clientId, ts: Date.now() }));
-          updateCount();
-        }
-      }, 12000);
+      broadcastHeartbeat('ONLINE');
     };
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.room === 'bmw_g30_530i_garage' && data.id && data.id !== clientId) {
-          if (data.type === 'ONLINE' || data.type === 'PING') {
-            activePeers.set(data.id, Date.now());
-            // Reply with our presence so the new peer knows we exist
-            if (data.type === 'ONLINE' && ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'PING', id: clientId, ts: Date.now() }));
+        const payload = JSON.parse(event.data);
+        if (payload && payload.id && payload.id !== clientId) {
+          if (payload.type === 'ONLINE' || payload.type === 'PING') {
+            activePeers.set(payload.id, Date.now());
+            if (payload.type === 'ONLINE') {
+              broadcastHeartbeat('PING');
             }
-          } else if (data.type === 'OFFLINE') {
-            activePeers.delete(data.id);
+            updateCount();
+          } else if (payload.type === 'OFFLINE') {
+            activePeers.delete(payload.id);
+            updateCount();
           }
-          updateCount();
         }
-      } catch {
-        // Ignore non-json messages
-      }
+      } catch {}
     };
   } catch (e) {
-    console.warn('Native WebSocket connection notice:', e);
+    // ignore
   }
 
-  // 2. BroadcastChannel for instant local cross-tab sync on same machine
+  // ==========================================
+  // CHANNEL 3: Local BroadcastChannel (Same Machine)
+  // ==========================================
   let localChannel: BroadcastChannel | null = null;
   try {
     if (typeof BroadcastChannel !== 'undefined') {
-      localChannel = new BroadcastChannel('bmw_g30_presence_local');
+      localChannel = new BroadcastChannel('bmw_g30_presence_local_bus');
       localChannel.onmessage = (e) => {
-        if (e.data?.id) {
+        if (e.data?.id && e.data.id !== clientId) {
           if (e.data.type === 'ONLINE' || e.data.type === 'PING') {
             activePeers.set(e.data.id, Date.now());
             if (e.data.type === 'ONLINE') {
-              localChannel?.postMessage({ type: 'PING', id: clientId });
+              localChannel?.postMessage({ id: clientId, type: 'PING', ts: Date.now() });
             }
+            updateCount();
           } else if (e.data.type === 'OFFLINE') {
             activePeers.delete(e.data.id);
+            updateCount();
           }
-          updateCount();
         }
       };
-      localChannel.postMessage({ type: 'ONLINE', id: clientId });
     }
-  } catch {
-    // Ignore
-  }
+  } catch {}
 
-  // 3. Cleanup stale peers every 5s
-  const cleanupTimer = setInterval(updateCount, 5000);
+  // Initial broadcast to announce arrival
+  broadcastHeartbeat('ONLINE');
 
-  // 4. Handle page exit
+  // Heartbeat interval: Every 8 seconds
+  const heartbeatTimer = setInterval(() => {
+    activePeers.set(clientId, Date.now());
+    broadcastHeartbeat('PING');
+    updateCount();
+  }, 8000);
+
+  // Peer cleanup timer: Every 4 seconds
+  const cleanupTimer = setInterval(updateCount, 4000);
+
+  // Page exit / tab close handler
   const handleUnload = () => {
-    if (localChannel) {
+    const payload = JSON.stringify({ id: clientId, type: 'OFFLINE', ts: Date.now() });
+    
+    // Beacon for reliable on-close HTTP delivery
+    if (navigator.sendBeacon) {
       try {
-        localChannel.postMessage({ type: 'OFFLINE', id: clientId });
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon(PRESENCE_POST_URL, blob);
+      } catch {}
+    } else {
+      try {
+        fetch(PRESENCE_POST_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          mode: 'cors',
+          keepalive: true
+        }).catch(() => {});
       } catch {}
     }
+
+    if (localChannel) {
+      try {
+        localChannel.postMessage({ id: clientId, type: 'OFFLINE' });
+      } catch {}
+    }
+
     if (ws && ws.readyState === WebSocket.OPEN) {
       try {
-        ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'OFFLINE', id: clientId }));
+        ws.send(payload);
         ws.close();
       } catch {}
     }
   };
 
   window.addEventListener('beforeunload', handleUnload);
+  window.addEventListener('pagehide', handleUnload);
 
+  // Teardown
   return () => {
     window.removeEventListener('beforeunload', handleUnload);
-    if (wsHeartbeat) clearInterval(wsHeartbeat);
-    if (cleanupTimer) clearInterval(cleanupTimer);
+    window.removeEventListener('pagehide', handleUnload);
+    clearInterval(heartbeatTimer);
+    clearInterval(cleanupTimer);
+
+    handleUnload();
+
+    if (eventSource) {
+      try {
+        eventSource.close();
+      } catch {}
+    }
     if (localChannel) {
       try {
-        localChannel.postMessage({ type: 'OFFLINE', id: clientId });
         localChannel.close();
       } catch {}
     }
     if (ws) {
       try {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'OFFLINE', id: clientId }));
-        }
         ws.close();
       } catch {}
     }
