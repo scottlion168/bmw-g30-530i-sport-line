@@ -1,16 +1,16 @@
 import { YearlyStat } from '../types';
 
 export const SUMMARY_STATS = {
-  totalCost: 756278,
-  yearlyAvg: 159193,
-  monthlyAvg: 13266,
+  totalCost: 757578,
+  yearlyAvg: 159490,
+  monthlyAvg: 13290,
   totalFuelCost: 135311,
   totalMaintenanceCost: 583107,
-  totalDetailingCost: 37860,
+  totalDetailingCost: 39160,
   startKm: 39350,
-  currentKm: 89746,
-  totalDrivenKm: 50396,
-  costPerKm: 15.01,
+  currentKm: 89858,
+  totalDrivenKm: 50508,
+  costPerKm: 15.00,
   trackingStartDate: '2021-11-23',
   modelName: '2017 BMW 530i Sport Line (美規 G30)',
   engineCode: 'B46 2.0L TwinPower Turbo (SULEV 認證 248 hp / 350 Nm)',

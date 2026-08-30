@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Navbar } from './components/Navbar';
 import { KPICards } from './components/KPICards';
 import { Charts } from './components/Charts';
@@ -22,6 +22,13 @@ export default function App() {
   const [isOBDOpen, setIsOBDOpen] = useState<boolean>(false);
   const [isHiddenFeaturesOpen, setIsHiddenFeaturesOpen] = useState<boolean>(false);
   const [lastUpdatedTime] = useState<string>(() => getLastUpdatedTime());
+
+  // Dynamically calculate latest mileage from records
+  const currentKm = useMemo(() => {
+    if (!records || records.length === 0) return 0;
+    const validKms = records.map((r) => r.km).filter((k): k is number => typeof k === 'number' && k > 0);
+    return validKms.length > 0 ? Math.max(...validKms) : 0;
+  }, [records]);
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'warn' } | null>(null);
@@ -75,6 +82,7 @@ export default function App() {
 
       {/* Top Navbar */}
       <Navbar
+        currentKm={currentKm}
         onOpenHunter={() => setIsHunterOpen(true)}
         onOpenOBD={() => setIsOBDOpen(true)}
         onOpenHiddenFeatures={() => setIsHiddenFeaturesOpen(true)}
@@ -83,38 +91,38 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Top Vehicle Spec Banner */}
-        <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-slate-800 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 shrink-0">
-              <Car className="w-7 h-7" />
+        <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-slate-800 p-3.5 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 shrink-0">
+              <Car className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-tech text-xl font-bold text-white tracking-wide">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className="font-tech text-base sm:text-lg lg:text-xl font-bold text-white tracking-wide">
                   2017 BMW 530i Sport Line (美規 G30)
                 </span>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono">
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] sm:text-xs font-mono">
                   車況良好 · 妥善率 S 級
                 </span>
-                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-mono">
+                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] sm:text-xs font-mono">
                   美規 SULEV (PZEV) 排放
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-mono-code mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-300 font-mono-code mt-0.5">
                 B46 2.0L TwinPower Turbo (248 hp / 350 Nm) · ZF 8HP50 8-Speed Steptronic
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs font-mono-code text-slate-400 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] sm:text-xs font-mono-code text-slate-300 bg-slate-950/70 p-2 sm:p-2.5 rounded-xl border border-slate-800/90 w-full md:w-auto justify-between sm:justify-start">
             <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-cyan-400" />
-              <span>車主認證唯讀履歷</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span>車主認證履歷</span>
             </div>
-            <div className="w-1 h-1 rounded-full bg-slate-700"></div>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-700"></div>
             <div>前後配 19吋 (245/40 & 275/35)</div>
-            <div className="w-1 h-1 rounded-full bg-slate-700"></div>
-            <div>標準機油量 5.25L</div>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-700"></div>
+            <div>標準機油 5.25L</div>
           </div>
         </div>
 
