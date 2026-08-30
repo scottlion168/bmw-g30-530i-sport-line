@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Calendar, Clock, Globe, Wifi, RefreshCw, ShieldCheck } from 'lucide-react';
+import { syncCloudVisitorCounts, initRealtimePresence } from '../utils/telemetry';
 
 interface VisitorStatsProps {
   lastUpdatedTime?: string;
@@ -18,116 +19,41 @@ export const VisitorStats: React.FC<VisitorStatsProps> = ({
     isLive: true
   });
 
-  // Sync genuine global visitors (0 artificial baseline, pure 100% authentic count since August 2026 deployment)
+  // Sync genuine global visitors across devices
   const fetchGlobalStats = async () => {
     setStats((prev) => ({ ...prev, isSyncing: true }));
-
-    let fetchedPv: number | null = null;
-    let fetchedUv: number | null = null;
-
     try {
-      // Genuine Busuanzi counter request without artificial offset
-      await new Promise<void>((resolve) => {
-        const callbackName = `bszCallback_${Date.now()}`;
-        (window as any)[callbackName] = (data: any) => {
-          if (data && (data.site_pv !== undefined || data.site_uv !== undefined)) {
-            fetchedPv = Number(data.site_pv) || null;
-            fetchedUv = Number(data.site_uv) || null;
-          }
-          delete (window as any)[callbackName];
-          resolve();
-        };
-
-        const script = document.createElement('script');
-        script.src = `//busuanzi.ibruce.info/busuanzi/2.0.jsonp?appkey=bmw-g30-530i-garage-live&jsonp=${callbackName}`;
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => {
-          delete (window as any)[callbackName];
-          resolve();
-        };
-        document.head.appendChild(script);
-
-        // Timeout fallback
-        setTimeout(() => {
-          if ((window as any)[callbackName]) {
-            delete (window as any)[callbackName];
-          }
-          resolve();
-        }, 2000);
-      });
+      const counts = await syncCloudVisitorCounts();
+      setStats((prev) => ({
+        ...prev,
+        monthlyTotal: counts.monthly,
+        allTimeTotal: counts.allTime,
+        isSyncing: false,
+        isLive: true
+      }));
     } catch {
-      // Fallback gracefully
+      setStats((prev) => ({ ...prev, isSyncing: false }));
     }
-
-    // Local telemetry tracker for persistent session storage
-    const STORAGE_KEY = 'bmw_g30_authentic_telemetry_2026';
-    const now = new Date();
-    const currentMonth = now.toISOString().slice(0, 7); // e.g. "2026-08"
-
-    let localAllTime = 1;
-    let localMonthly = 1;
-
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const isSameMonth = parsed.lastMonth === currentMonth;
-        localAllTime = (parsed.allTime || 0) + 1;
-        localMonthly = isSameMonth ? ((parsed.monthly || 0) + 1) : 1;
-      }
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          allTime: localAllTime,
-          monthly: localMonthly,
-          lastMonth: currentMonth,
-          lastUpdated: Date.now()
-        })
-      );
-    } catch {
-      localAllTime = 1;
-      localMonthly = 1;
-    }
-
-    const finalAllTime = fetchedPv && fetchedPv > 0 ? fetchedPv : localAllTime;
-    const finalMonthly = fetchedUv && fetchedUv > 0 ? fetchedUv : localMonthly;
-
-    setStats((prev) => ({
-      ...prev,
-      monthlyTotal: finalMonthly,
-      allTimeTotal: finalAllTime,
-      isSyncing: false,
-      isLive: true
-    }));
   };
 
   useEffect(() => {
+    // 1. Initial Cloud Sync for persistent cross-device counts
     fetchGlobalStats();
 
-    // BroadcastChannel to count true open tabs across this browser in real-time
-    let channel: BroadcastChannel | null = null;
-    let activeTabsCount = 1;
+    // 2. Real-time Multi-Device Presence via MQTT WebSocket
+    const teardownPresence = initRealtimePresence((activeCount) => {
+      setStats((prev) => ({
+        ...prev,
+        activeNow: Math.max(1, activeCount)
+      }));
+    });
 
-    try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        channel = new BroadcastChannel('bmw_g30_authentic_room');
-        channel.onmessage = (msg) => {
-          if (msg.data?.type === 'HEARTBEAT') {
-            activeTabsCount += 1;
-            setStats((prev) => ({ ...prev, activeNow: activeTabsCount }));
-          }
-        };
-        channel.postMessage({ type: 'HEARTBEAT' });
-      }
-    } catch {
-      // Ignore
-    }
+    // Periodic count re-fetch every 45 seconds to catch other visitors' updates
+    const interval = setInterval(fetchGlobalStats, 45000);
 
     return () => {
-      if (channel) {
-        channel.close();
-      }
+      teardownPresence();
+      clearInterval(interval);
     };
   }, []);
 
