@@ -43,7 +43,7 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
   onOpenHunter
 }) => {
   const [selectedYear, setSelectedYear] = useState<string>('all');
-  const [sortField, setSortField] = useState<'date' | 'cost' | 'km'>('date');
+  const [sortField, setSortField] = useState<'date' | 'cost' | 'km'>('km');
   const [sortAsc, setSortAsc] = useState<boolean>(false);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
@@ -96,16 +96,24 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
         return true;
       })
       .sort((a, b) => {
-        if (sortField === 'date') {
+        if (sortField === 'km') {
+          const kmA = a.km !== null && a.km !== undefined ? a.km : -1;
+          const kmB = b.km !== null && b.km !== undefined ? b.km : -1;
+          if (kmA !== kmB) {
+            return sortAsc ? kmA - kmB : kmB - kmA;
+          }
+          // Secondary sort: Date
           return sortAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
+        }
+        if (sortField === 'date') {
+          const dateCompare = sortAsc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
+          if (dateCompare !== 0) return dateCompare;
+          const kmA = a.km !== null && a.km !== undefined ? a.km : -1;
+          const kmB = b.km !== null && b.km !== undefined ? b.km : -1;
+          return sortAsc ? kmA - kmB : kmB - kmA;
         }
         if (sortField === 'cost') {
           return sortAsc ? a.totalCost - b.totalCost : b.totalCost - a.totalCost;
-        }
-        if (sortField === 'km') {
-          const kmA = a.km || 0;
-          const kmB = b.km || 0;
-          return sortAsc ? kmA - kmB : kmB - kmA;
         }
         return 0;
       });
@@ -277,26 +285,48 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
             <tr>
               <th
                 onClick={() => {
-                  setSortField('date');
-                  setSortAsc(!sortAsc);
+                  if (sortField === 'km') {
+                    setSortAsc(!sortAsc);
+                  } else {
+                    setSortField('km');
+                    setSortAsc(false);
+                  }
                 }}
-                className="py-3 px-3 sm:px-4 cursor-pointer hover:text-white transition-colors whitespace-nowrap"
+                className={`py-3 px-3 sm:px-4 cursor-pointer transition-colors whitespace-nowrap ${
+                  sortField === 'km' ? 'text-blue-400 font-bold bg-blue-950/20' : 'hover:text-white'
+                }`}
               >
                 <div className="flex items-center gap-1">
-                  <span>日期</span>
-                  <ArrowUpDown className="w-3 h-3" />
+                  <span>儀表里程</span>
+                  <ArrowUpDown className={`w-3 h-3 ${sortField === 'km' ? 'text-blue-400' : 'text-slate-500'}`} />
+                  {sortField === 'km' && (
+                    <span className="text-[10px] text-blue-400 font-mono">
+                      {sortAsc ? '(舊→新)' : '(最新↓)'}
+                    </span>
+                  )}
                 </div>
               </th>
               <th
                 onClick={() => {
-                  setSortField('km');
-                  setSortAsc(!sortAsc);
+                  if (sortField === 'date') {
+                    setSortAsc(!sortAsc);
+                  } else {
+                    setSortField('date');
+                    setSortAsc(false);
+                  }
                 }}
-                className="py-3 px-3 sm:px-4 cursor-pointer hover:text-white transition-colors whitespace-nowrap"
+                className={`py-3 px-3 sm:px-4 cursor-pointer transition-colors whitespace-nowrap ${
+                  sortField === 'date' ? 'text-blue-400 font-bold bg-blue-950/20' : 'hover:text-white'
+                }`}
               >
                 <div className="flex items-center gap-1">
-                  <span>儀表里程</span>
-                  <ArrowUpDown className="w-3 h-3" />
+                  <span>日期</span>
+                  <ArrowUpDown className={`w-3 h-3 ${sortField === 'date' ? 'text-blue-400' : 'text-slate-500'}`} />
+                  {sortField === 'date' && (
+                    <span className="text-[10px] text-blue-400 font-mono">
+                      {sortAsc ? '(舊→新)' : '(最新↓)'}
+                    </span>
+                  )}
                 </div>
               </th>
               <th className="py-3 px-3 sm:px-4 whitespace-nowrap">類別</th>
@@ -304,14 +334,20 @@ export const RecordsTable: React.FC<RecordsTableProps> = ({
               <th className="py-3 px-4 whitespace-nowrap">施作保修廠</th>
               <th
                 onClick={() => {
-                  setSortField('cost');
-                  setSortAsc(!sortAsc);
+                  if (sortField === 'cost') {
+                    setSortAsc(!sortAsc);
+                  } else {
+                    setSortField('cost');
+                    setSortAsc(false);
+                  }
                 }}
-                className="py-3 px-4 text-right cursor-pointer hover:text-white transition-colors whitespace-nowrap"
+                className={`py-3 px-4 text-right cursor-pointer transition-colors whitespace-nowrap ${
+                  sortField === 'cost' ? 'text-blue-400 font-bold bg-blue-950/20' : 'hover:text-white'
+                }`}
               >
                 <div className="flex items-center justify-end gap-1">
                   <span>實付金額</span>
-                  <ArrowUpDown className="w-3 h-3" />
+                  <ArrowUpDown className={`w-3 h-3 ${sortField === 'cost' ? 'text-blue-400' : 'text-slate-500'}`} />
                 </div>
               </th>
               <th className="py-3 px-3 text-center whitespace-nowrap">詳情</th>
