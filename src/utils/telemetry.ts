@@ -1,5 +1,3 @@
-import mqtt from 'mqtt';
-
 // Multi-endpoint fallback cloud counter
 const CLOUD_APIS = {
   abacusAllTime: 'https://abacus.jasoncameron.dev/hit/bmw-g30-530i-sport/all-time',
@@ -78,6 +76,43 @@ export async function syncCloudVisitorCounts(): Promise<{ allTime: number; month
     }
   }
 
+  // 3. Try Busuanzi as additional verification fallback
+  if (!success) {
+    try {
+      await new Promise<void>((resolve) => {
+        const callbackName = `bszCb_${Date.now()}`;
+        (window as any)[callbackName] = (data: any) => {
+          if (data && (data.site_pv !== undefined || data.site_uv !== undefined)) {
+            allTimeCount = Number(data.site_pv) || allTimeCount;
+            monthlyCount = Number(data.site_uv) || monthlyCount;
+            success = true;
+          }
+          delete (window as any)[callbackName];
+          resolve();
+        };
+
+        const script = document.createElement('script');
+        script.src = `//busuanzi.ibruce.info/busuanzi/2.0.jsonp?appkey=bmw-g30-530i-garage-live&jsonp=${callbackName}`;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => {
+          delete (window as any)[callbackName];
+          resolve();
+        };
+        document.head.appendChild(script);
+
+        setTimeout(() => {
+          if ((window as any)[callbackName]) {
+            delete (window as any)[callbackName];
+          }
+          resolve();
+        }, 1500);
+      });
+    } catch {
+      // fallback
+    }
+  }
+
   if (isNewSession && success) {
     sessionStorage.setItem('bmw_g30_session_counted_2026', 'true');
   }
@@ -89,101 +124,85 @@ export async function syncCloudVisitorCounts(): Promise<{ allTime: number; month
 }
 
 /**
- * Real-time cross-device presence engine via WebSocket MQTT
+ * Real-time cross-device presence engine using standard browser WebSockets + BroadcastChannel
+ * Pure web standards, zero third-party Node.js dependencies (100% compatible with GitHub Actions / Vite / Cloudflare / Vercel)
  */
 export function initRealtimePresence(onCountChange: (count: number) => void): () => void {
-  const clientId = `bmw_user_${Math.random().toString(36).slice(2, 9)}_${Date.now()}`;
-  const PRESENCE_TOPIC = 'bmw_g30_530i_presence/online_clients';
-  const CLIENT_TOPIC = `bmw_g30_530i_presence/clients/${clientId}`;
-
+  const clientId = `client_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
   const activePeers = new Map<string, number>();
   activePeers.set(clientId, Date.now());
 
   const updateCount = () => {
     const now = Date.now();
     for (const [id, lastSeen] of activePeers.entries()) {
-      if (now - lastSeen > 35000) {
+      if (now - lastSeen > 30000) {
         activePeers.delete(id);
       }
     }
-    // Self is always at least 1
     if (!activePeers.has(clientId)) {
       activePeers.set(clientId, now);
     }
     onCountChange(activePeers.size);
   };
 
-  let client: mqtt.MqttClient | null = null;
-  let heartbeatInterval: any = null;
-  let cleanupInterval: any = null;
+  // 1. Native WebSocket Connection to public presence echo relay (PieSocket / SocketsBay public channel)
+  let ws: WebSocket | null = null;
+  let wsHeartbeat: any = null;
 
   try {
-    // Connect to public MQTT WebSocket broker (supporting SSL wss port 8084 / 8884)
-    client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-      clientId,
-      clean: true,
-      keepalive: 20,
-      connectTimeout: 5000,
-      will: {
-        topic: CLIENT_TOPIC,
-        payload: Buffer.from(JSON.stringify({ type: 'OFFLINE', id: clientId })),
-        qos: 0,
-        retain: false
-      }
-    });
+    // SocketsBay / PieSocket public presence stream
+    ws = new WebSocket('wss://socketsbay.com/wss/v2/1/demo/');
 
-    client.on('connect', () => {
-      // Subscribe to all client heartbeats
-      client?.subscribe('bmw_g30_530i_presence/clients/#');
-
-      // Send initial announcement
-      const payload = JSON.stringify({ type: 'ONLINE', id: clientId, ts: Date.now() });
-      client?.publish(CLIENT_TOPIC, payload);
-
-      // Start periodic heartbeat every 10 seconds
-      heartbeatInterval = setInterval(() => {
-        if (client?.connected) {
+    ws.onopen = () => {
+      ws?.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'ONLINE', id: clientId, ts: Date.now() }));
+      
+      wsHeartbeat = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
           activePeers.set(clientId, Date.now());
-          client.publish(CLIENT_TOPIC, JSON.stringify({ type: 'ONLINE', id: clientId, ts: Date.now() }));
+          ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'PING', id: clientId, ts: Date.now() }));
           updateCount();
         }
-      }, 10000);
-    });
+      }, 12000);
+    };
 
-    client.on('message', (topic, message) => {
+    ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(message.toString());
-        if (data.id) {
-          if (data.type === 'ONLINE') {
+        const data = JSON.parse(event.data);
+        if (data.room === 'bmw_g30_530i_garage' && data.id && data.id !== clientId) {
+          if (data.type === 'ONLINE' || data.type === 'PING') {
             activePeers.set(data.id, Date.now());
+            // Reply with our presence so the new peer knows we exist
+            if (data.type === 'ONLINE' && ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'PING', id: clientId, ts: Date.now() }));
+            }
           } else if (data.type === 'OFFLINE') {
             activePeers.delete(data.id);
           }
           updateCount();
         }
       } catch {
-        // ignore malformed message
+        // Ignore non-json messages
       }
-    });
-
-    // Cleanup stale peers every 5 seconds
-    cleanupInterval = setInterval(updateCount, 5000);
-
+    };
   } catch (e) {
-    console.warn('Realtime presence connect fallback:', e);
+    console.warn('Native WebSocket connection notice:', e);
   }
 
-  // Cross-tab broadcast for instant local tabs on same device
+  // 2. BroadcastChannel for instant local cross-tab sync on same machine
   let localChannel: BroadcastChannel | null = null;
   try {
     if (typeof BroadcastChannel !== 'undefined') {
-      localChannel = new BroadcastChannel('bmw_g30_local_tabs');
+      localChannel = new BroadcastChannel('bmw_g30_presence_local');
       localChannel.onmessage = (e) => {
-        if (e.data?.id && e.data.type === 'ONLINE') {
-          activePeers.set(e.data.id, Date.now());
-          updateCount();
-        } else if (e.data?.id && e.data.type === 'OFFLINE') {
-          activePeers.delete(e.data.id);
+        if (e.data?.id) {
+          if (e.data.type === 'ONLINE' || e.data.type === 'PING') {
+            activePeers.set(e.data.id, Date.now());
+            if (e.data.type === 'ONLINE') {
+              localChannel?.postMessage({ type: 'PING', id: clientId });
+            }
+          } else if (e.data.type === 'OFFLINE') {
+            activePeers.delete(e.data.id);
+          }
           updateCount();
         }
       };
@@ -193,38 +212,42 @@ export function initRealtimePresence(onCountChange: (count: number) => void): ()
     // Ignore
   }
 
-  // Handle page exit / tab close
+  // 3. Cleanup stale peers every 5s
+  const cleanupTimer = setInterval(updateCount, 5000);
+
+  // 4. Handle page exit
   const handleUnload = () => {
     if (localChannel) {
       try {
         localChannel.postMessage({ type: 'OFFLINE', id: clientId });
       } catch {}
     }
-    if (client && client.connected) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
       try {
-        client.publish(CLIENT_TOPIC, JSON.stringify({ type: 'OFFLINE', id: clientId }));
-        client.end(true);
+        ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'OFFLINE', id: clientId }));
+        ws.close();
       } catch {}
     }
   };
 
   window.addEventListener('beforeunload', handleUnload);
 
-  // Return teardown function
   return () => {
     window.removeEventListener('beforeunload', handleUnload);
-    if (heartbeatInterval) clearInterval(heartbeatInterval);
-    if (cleanupInterval) clearInterval(cleanupInterval);
+    if (wsHeartbeat) clearInterval(wsHeartbeat);
+    if (cleanupTimer) clearInterval(cleanupTimer);
     if (localChannel) {
       try {
         localChannel.postMessage({ type: 'OFFLINE', id: clientId });
         localChannel.close();
       } catch {}
     }
-    if (client) {
+    if (ws) {
       try {
-        client.publish(CLIENT_TOPIC, JSON.stringify({ type: 'OFFLINE', id: clientId }));
-        client.end(true);
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ room: 'bmw_g30_530i_garage', type: 'OFFLINE', id: clientId }));
+        }
+        ws.close();
       } catch {}
     }
   };
